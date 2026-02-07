@@ -95,13 +95,32 @@ async function approveRequirements(
 
       if (agentOutput) {
         await projectRepository.updateAgentOutput(agentOutput.id, {
-          output: approvedRequirements,
+          output: {
+            // Merge existing output with new approved requirements
+            ...(agentOutput.output as any),
+            ...approvedRequirements,
+            isApproved: true,
+          },
         });
 
         await projectRepository.createAuditLog({
           designVersionId: latestVersion.id,
           action: 'requirements_updated_by_user',
           details: { approvedRequirements },
+        });
+      }
+    } else {
+      // Just approving existing requirements
+      const agentOutput = latestVersion.agentOutputs.find(
+        (o) => o.agentType === 'requirement_analyzer'
+      );
+
+      if (agentOutput) {
+        await projectRepository.updateAgentOutput(agentOutput.id, {
+          output: {
+            ...(agentOutput.output as any),
+            isApproved: true,
+          },
         });
       }
     }

@@ -35,8 +35,10 @@ export class WebSearcher {
         if (results.length >= limit) return false;
 
         const title = $(element).find('.result__a').text().trim();
-        const link = $(element).find('.result__a').attr('href');
+        const rawLink = $(element).find('.result__a').attr('href');
         const snippet = $(element).find('.result__snippet').text().trim();
+
+        const link = this.extractActualUrl(rawLink);
 
         if (title && link && snippet) {
           results.push({ title, link, snippet });
@@ -53,6 +55,38 @@ export class WebSearcher {
   }
 
   /**
+   * Extracts the actual destination URL from a DuckDuckGo result link.
+   * Handles both direct links and /l/?uddg= redirects.
+   */
+  private static extractActualUrl(link: string | undefined): string | null {
+    if (!link) return null;
+
+    try {
+      // If it's a relative DDG link starting with /l/, it's a redirect
+      if (link.startsWith('/l/')) {
+        const url = new URL(link, 'https://duckduckgo.com');
+        const uddg = url.searchParams.get('uddg');
+        if (uddg) return decodeURIComponent(uddg);
+      }
+
+      // If it starts with http, it's likely a direct link or external redirect
+      if (link.startsWith('http')) {
+        // Double check if it's a DDG redirect masquerading as a direct link
+        if (link.includes('duckduckgo.com/l/?uddg=')) {
+          const url = new URL(link);
+          const uddg = url.searchParams.get('uddg');
+          if (uddg) return decodeURIComponent(uddg);
+        }
+        return link;
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
    * Fetches the text content of a generic web page.
    * @param url The URL to fetch.
    * @returns The text content of the page.
@@ -60,21 +94,32 @@ export class WebSearcher {
   static async getPageText(url: string): Promise<string> {
     const userAgent = new UserAgent().toString();
     try {
+      // Basic URL health check
+      new URL(url);
+
       const response = await axios.get(url, {
         headers: {
           'User-Agent': userAgent,
         },
         timeout: 5000,
+        maxRedirects: 3, // Follow a few redirects but not too many
       });
+
       const $ = cheerio.load(response.data);
 
       // Remove scripts, styles, and other non-content elements
-      $('script, style, nav, footer, header, aside, .ad, .advertisement').remove();
+      $('script, style, nav, footer, header, aside, .ad, .advertisement, noscript').remove();
 
       // Get text and clean up whitespace
-      return $('body').text().replace(/\s+/g, ' ').trim().slice(0, 5000); // Limit to 5000 chars
+      const text = $('body').text().replace(/\s+/g, ' ').trim();
+
+      if (text.length < 100) {
+        throw new Error('Page content too short or empty');
+      }
+
+      return text.slice(0, 5000); // Limit to 5000 chars
     } catch (error) {
-      console.error(`Failed to fetch page text for ${url}:`, error);
+      console.error(`Failed to fetch page text for ${url}:`, error instanceof Error ? error.message : String(error));
       return '';
     }
   }

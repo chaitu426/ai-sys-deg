@@ -39,6 +39,7 @@ export interface RequirementAnalyzerOutput {
   clarifyingDecisions: string[];
   questions?: string[]; // Questions for the user if requirements are ambiguous
   researchSources?: { title: string; url: string }[];
+  isApproved?: boolean; // User approval status
 }
 
 /**
@@ -128,6 +129,8 @@ export interface DiagramGeneratorOutput {
   highLevelSystem: string; // Mermaid diagram
   requestFlow: string; // Mermaid diagram
   scalingView: string; // Mermaid diagram
+  cloudArchitecture: string; // Mermaid diagram
+  apiArchitecture: string; // Mermaid diagram
 }
 
 /**

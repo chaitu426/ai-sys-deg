@@ -21,11 +21,11 @@ const CORE_AGENTS: AgentType[] = [
   AGENTS.REQUIREMENT_ANALYZER,
   AGENTS.SYSTEM_DESIGN,
   AGENTS.TECH_STACK,
-  AGENTS.DIAGRAM_GENERATOR,
   AGENTS.API_DESIGN,
-  AGENTS.COST_ESTIMATION,
   AGENTS.DEPLOYMENT_STRATEGY,
+  AGENTS.COST_ESTIMATION,
   AGENTS.FAILURE_MODE_ANALYZER,
+  AGENTS.DIAGRAM_GENERATOR,
 ];
 
 /**
@@ -36,6 +36,7 @@ export const OPTIONAL_AGENTS: AgentType[] = [
   AGENTS.COST_ESTIMATION,
   AGENTS.DEPLOYMENT_STRATEGY,
   AGENTS.FAILURE_MODE_ANALYZER,
+  AGENTS.DIAGRAM_GENERATOR,
 ];
 
 export class Orchestrator {
@@ -400,95 +401,77 @@ export class Orchestrator {
     designVersionId: string
   ): Promise<AgentType[]> {
     const userPlan = await this.resolveEffectivePlan(designVersionId);
-
-    // Import plan helper (dynamic to avoid circular deps)
     const { isAgentAllowed } = await import('../utils/plans');
 
-    const nextAgents: AgentType[] = [];
-
-    // PHASE 1: Sequential Foundation
-    if (!context.previousOutputs.requirementAnalyzer) {
-      if (isAgentAllowed(userPlan, AGENTS.REQUIREMENT_ANALYZER)) {
-        nextAgents.push(AGENTS.REQUIREMENT_ANALYZER);
-      }
-      return nextAgents; // Only run one sequential agent at a time
-    }
-    if (!context.previousOutputs.systemDesign) {
-      if (isAgentAllowed(userPlan, AGENTS.SYSTEM_DESIGN)) {
-        nextAgents.push(AGENTS.SYSTEM_DESIGN);
-      }
-      return nextAgents;
-    }
-    if (!context.previousOutputs.techStack) {
-      if (isAgentAllowed(userPlan, AGENTS.TECH_STACK)) {
-        nextAgents.push(AGENTS.TECH_STACK);
-      }
-      return nextAgents;
-    }
-
-    // PHASE 2: Parallel Execution
-    // Once Tech Stack is done, we can run all specific agents in parallel
-    // CHECK: For each agent, if it's NOT completed AND NOT failed (if optional), queue it.
-
-    const parallelAgents = [
-      AGENTS.DIAGRAM_GENERATOR,
+    // Strict Sequential Order
+    const SEQUENTIAL_AGENTS: AgentType[] = [
+      AGENTS.REQUIREMENT_ANALYZER,
+      AGENTS.SYSTEM_DESIGN,
+      AGENTS.TECH_STACK,
       AGENTS.API_DESIGN,
-      AGENTS.COST_ESTIMATION,
       AGENTS.DEPLOYMENT_STRATEGY,
-      AGENTS.FAILURE_MODE_ANALYZER
+      AGENTS.COST_ESTIMATION,
+      AGENTS.FAILURE_MODE_ANALYZER,
+      AGENTS.DIAGRAM_GENERATOR, // Final step
     ];
 
-    for (const agent of parallelAgents) {
-      // Skip if already completed
-      if (context.agentStatuses[agent] === 'completed') continue;
-
-      // Skip if currently processing/pending
-      if (context.agentStatuses[agent] === 'pending' || context.agentStatuses[agent] === 'processing') continue;
-
-      // Skip if failed AND optional (Retry logic in worker handles transient, so this is final failure)
-      // Diagram Generator is also implicitly optional in this logic if we want.
-      // Let's check against OPTIONAL_AGENTS list + Diagram Generator
-      const isOptional = OPTIONAL_AGENTS.includes(agent) || agent === AGENTS.DIAGRAM_GENERATOR;
-
-      if (context.agentStatuses[agent] === 'failed' && isOptional) {
-        continue; // Give up on this agent
+    // Find the first agent that is NOT completed
+    for (const agent of SEQUENTIAL_AGENTS) {
+      // 1. If agent is completed, move to next
+      if (context.agentStatuses[agent] === 'completed') {
+        continue;
       }
 
-      // If not failed (or failed but required/retryable? No, worker handles retries), 
-      // effectively: if we are here, it's either unrepresented (undefined) OR failed-but-required.
-      // If it logic failed-but-required, we probably should re-try? 
-      // But worker marks DB as failed. If we add it here, we infinitely retry?
-      // NO, we rely on the manual "retryAgent" action for required failures?
-      // OR we fatal error the workflow.
-      // If Required agent fails, 'checkIfWorkflowComplete' won't return true (it checks statuses), 
-      // and determineNextAgents will return it here IF it's not checked?
-      // Wait, if it failed, it's in the list.
-      // If we return it here, 'enqueueAgentIfNeeded' will see it as 'failed', reset to 'pending' and re-run.
-      // That IS an infinite loop for required agents.
-      // BUT `workers.ts` sets DesignVersion status to 'failed' for required agents.
-      // So the whole workflow stops processing agents because `continueWorkflow` ... 
-      // `continueWorkflow` logic: gets context. 
-      // Does `continueWorkflow` check for 'failed' design version?
-      // No. 
-      // But `workers.ts` sets status 'failed'. 
-      // We probably should check designVersion.status in `continueWorkflow`.
+      // 2. If agent is running (processing/pending), we wait.
+      // We return empty list because we don't need to start anything new.
+      if (
+        context.agentStatuses[agent] === 'processing' ||
+        context.agentStatuses[agent] === 'pending'
+      ) {
+        return [];
+      }
 
-      if (isAgentAllowed(userPlan, agent)) {
-        nextAgents.push(agent);
-      } else {
-        logger.debug('Agent skipped due to plan limits', {
+      // 3. If we are here, this 'agent' is the next one to run.
+      // CHECK: Is it allowed by plan?
+      if (!isAgentAllowed(userPlan, agent)) {
+        logger.debug('Agent skipped due to plan limits (sequential)', {
           designVersionId,
           agentType: agent,
-          userPlan
+          userPlan,
         });
+        // If skipped, we treat it as "done" for the sequence flow?
+        // OR does the system stop?
+        // Usually, if a required agent is not allowed, we probably stop.
+        // But for optional ones like "mcp_auditor" (if it existed), we might skip.
+        // Logic: if not allowed, we CANNOT run it.
+        // We should probably mark it as 'skipped' or just continue loop?
+        // Our 'isAgentAllowed' logic usually implies feature gating.
+        // For now, let's assume if it's in the list, it's blocked.
+        // But wait, if we skip it here, we need to make sure we don't get stuck.
+        // We should likely SKIP it and attempt the next one?
+        // BUT the next one might depend on this one's output.
+        // 'assertDependencies' will catch that.
+        // So safe bet: If not allowed, skip and try next.
+        continue;
       }
+
+      // CHECK: Special Logic for Requirement Approval
+      if (agent === AGENTS.SYSTEM_DESIGN) {
+        // Before starting System Design, check if Requirements are approved
+        if (
+          context.previousOutputs.requirementAnalyzer &&
+          !context.previousOutputs.requirementAnalyzer.isApproved
+        ) {
+          logger.info('Workflow paused waiting for requirement approval', { designVersionId });
+          return [];
+        }
+      }
+
+      // Found the next agent to run!
+      return [agent];
     }
 
-    // If there are parallel agents to run, return them
-    if (nextAgents.length > 0) {
-      return nextAgents;
-    }
-
+    // If loop finishes, all agents are done.
     return [];
   }
 
@@ -569,10 +552,43 @@ export class Orchestrator {
   }
 
   private assertDependencies(agentType: AgentType, context: Omit<AgentContext, 'agentType'>) {
-    if (OPTIONAL_AGENTS.includes(agentType)) {
-      if (!context.previousOutputs.systemDesign) {
-        throw new Error(`${agentType} requires system_design output`);
+    // Base requirement for all non-foundation agents
+    if (agentType !== AGENTS.REQUIREMENT_ANALYZER) {
+      if (!context.previousOutputs.requirementAnalyzer) {
+        throw new Error(`${agentType} requires requirement_analyzer output`);
       }
+    }
+
+    if (agentType === AGENTS.SYSTEM_DESIGN) {
+      // Already checked requirements above
+      if (context.previousOutputs.requirementAnalyzer && !context.previousOutputs.requirementAnalyzer.isApproved) {
+        throw new Error(`System Design requires approved requirements`);
+      }
+    }
+
+    if (agentType === AGENTS.TECH_STACK) {
+      if (!context.previousOutputs.systemDesign) throw new Error(`${agentType} requires system_design output`);
+    }
+
+    if (agentType === AGENTS.API_DESIGN) {
+      if (!context.previousOutputs.techStack) throw new Error(`${agentType} requires tech_stack output`);
+    }
+
+    if (agentType === AGENTS.DEPLOYMENT_STRATEGY) {
+      if (!context.previousOutputs.apiDesign) throw new Error(`${agentType} requires api_design output`);
+    }
+
+    if (agentType === AGENTS.COST_ESTIMATION) {
+      if (!context.previousOutputs.deploymentStrategy) throw new Error(`${agentType} requires deployment_strategy output`);
+    }
+
+    if (agentType === AGENTS.FAILURE_MODE_ANALYZER) {
+      if (!context.previousOutputs.costEstimation) throw new Error(`${agentType} requires cost_estimation output`);
+    }
+
+    if (agentType === AGENTS.DIAGRAM_GENERATOR) {
+      // Needs EVERYTHING to be perfect
+      if (!context.previousOutputs.failureModeAnalyzer) throw new Error(`${agentType} requires all previous agents to be completed`);
     }
   }
 

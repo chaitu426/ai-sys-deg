@@ -47,9 +47,9 @@ async function listProjects(request: FastifyRequest, reply: FastifyReply) {
         updatedAt: p.updatedAt,
         latestVersion: p.designVersions[0]
           ? {
-              version: p.designVersions[0].version,
-              status: p.designVersions[0].status,
-            }
+            version: p.designVersions[0].version,
+            status: p.designVersions[0].status,
+          }
           : null,
       })),
       pagination: {

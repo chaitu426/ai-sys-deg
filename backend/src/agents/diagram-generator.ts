@@ -9,6 +9,9 @@ import {
   DiagramGeneratorOutput,
   SystemDesignOutput,
   RequirementAnalyzerOutput,
+  APIDesignOutput,
+  DeploymentStrategyOutput,
+  TechStackOutput,
 } from '../core/contracts';
 import { getLogger } from '../utils/logger';
 
@@ -25,38 +28,56 @@ You MUST output ONLY a valid JSON object. No markdown, no explanations.
 
 ## JSON Schema (STRICT)
 {
-  "highLevelSystem": "graph TD\\n  A[Client] --> B[API Gateway]\\n  ...",
+  "highLevelSystem": "graph TD\\n  A[Client] --> B[API Gateway]...",
   "requestFlow": "sequenceDiagram\\n  participant Client\\n  ...",
-  "scalingView": "graph TD\\n  LB[Load Balancer] --> S1[Service 1]\\n  ..."
+  "scalingView": "graph TD\\n  LB[Load Balancer] --> S1[Service 1]...",
+  "cloudArchitecture": "graph TD\\n  subgraph AWS...",
+  "apiArchitecture": "graph LR\\n  C[Client] -->|GET /users| API..."
 }
 
 ## Diagram Requirements
 
 ### 1. highLevelSystem
-- Use: graph TD or graph LR
-- Show: Client, API Gateway, Services, Databases, Caches
-- Keep it readable and high-level
+- Use: graph TD (Top-Down) or graph LR (Left-Right) ONLY.
+- Show: Client, API Gateway, Services, Databases, Caches.
+- Keep it readable. Avoid crossing lines where possible.
 
 ### 2. requestFlow
-- Use: sequenceDiagram
-- Show: Complete request lifecycle from client to response
-- Use proper arrows: ->> for requests, -->> for responses
+- Use: sequenceDiagram ONLY.
+- Key Rule: Define participants first if needed for order.
+- Use ->> for solid lines (requests), -->> for dotted lines (responses).
+- Valid participants: Client, API Gateway, Service A, Database, Cache, Queue.
 
 ### 3. scalingView
-- Use: graph TD or graph LR
-- Show: Load balancers, multiple service instances, workers, replicas
+- Use: graph TD.
+- Visualizing scaling: Show "Load Balancer" pointing to multiple "Service Instance" nodes.
+- Show "Primary DB" and "Read Replica" if applicable.
 
-## Mermaid Syntax Rules (CRITICAL)
-1. Node IDs must have NO spaces (use camelCase or PascalCase)
-2. Do NOT use HTML, markdown, emojis, or comments
-3. Escape special characters in labels
-4. Each diagram must be a single valid Mermaid string
-5. Use \\n for newlines within the string
+### 4. cloudArchitecture
+- Use: graph TD.
+- Show: Cloud infrastructure (Regions, AZs, VPCs, Subnets, Services).
+- Visualize the deployment strategy context (e.g. AWS/GCP/Azure components).
+
+### 5. apiArchitecture
+- Use: graph LR.
+- Show: Client triggering specific API endpoints (grouped by resource).
+- Visualize how endpoints map to services.
+
+## Mermaid Syntax Rules (CRITICAL - DO NOT BREAK THESE)
+1. **Node IDs**: Must be alphanumeric ONLY (e.g., \`AuthService\`, \`API_Gateway\`). NO spaces, NO dashes in IDs.
+   - BAD: \`Auth Service\` --> B
+   - GOOD: \`AuthService["Auth Service"]\` --> B
+2. **Text Labels**: ALWAYS wrap text labels in double quotes inside the brackets.
+   - BAD: A[Client App]
+   - GOOD: A["Client App"]
+3. **NO STYLING**: Do NOT use \`style\`, \`classDef\`, or CSS. Keep it raw and clean.
+4. **NO SUBGRAPHS**: Do NOT use subgraphs. They often break the renderer. Use clusters only if absolutely necessary and you are 100% sure of syntax. Preferred: Flat graph.
+5. **Standard Arrow**: Use simple \`-->\` for graphs.
 
 ## String Escaping
 Since diagrams go inside JSON strings, you must:
 - Use \\n for newlines (not actual newlines)
-- Escape quotes as \\"
+- Escape internal quotes as \\"
 - Keep each diagram as a single-line JSON string value
 
 ## Critical Output Rules
@@ -95,18 +116,48 @@ Scaling Strategy:
 - Caching: ${design.scalingStrategy.cachingStrategy}
 - Database: ${design.scalingStrategy.databaseScaling}
 
-Generate three diagrams:
+Generate FIVE diagrams:
 1. highLevelSystem: Overview of all components and connections
 2. requestFlow: Sequence diagram showing a typical API request
 3. scalingView: How the system scales (load balancers, replicas, workers)
+4. cloudArchitecture: Infrastructure & Deployment view
+5. apiArchitecture: API endpoints and service mapping
+
+ADDITIONAL CONTEXT (USE THIS!):
+
+${context.previousOutputs.techStack ? `
+Tech Stack:
+Frontend: ${(context.previousOutputs.techStack as TechStackOutput).frontend}
+Backend: ${(context.previousOutputs.techStack as TechStackOutput).backend}
+Database: ${(context.previousOutputs.techStack as TechStackOutput).database}
+Infra: ${(context.previousOutputs.techStack as TechStackOutput).infrastructure}
+` : ''}
+
+${context.previousOutputs.apiDesign ? `
+API Design:
+${(context.previousOutputs.apiDesign as APIDesignOutput).endpoints.slice(0, 10).map(e => `${e.method} ${e.path}`).join('\n')}
+` : ''}
+
+${context.previousOutputs.deploymentStrategy ? `
+Deployment Strategy:
+Model: ${(context.previousOutputs.deploymentStrategy as DeploymentStrategyOutput).deploymentModel}
+Environments: ${(context.previousOutputs.deploymentStrategy as DeploymentStrategyOutput).environments.map(e => e.name).join(', ')}
+` : ''}
 `;
 
     if (context.previousOutputs.requirementAnalyzer) {
       const requirements = context.previousOutputs.requirementAnalyzer as RequirementAnalyzerOutput;
       prompt += `
 
+
 Key Requirements to Visualize:
 ${requirements.functionalRequirements.slice(0, 5).map((r) => `- ${r}`).join('\n')}
+
+REMINDER:
+- For 'highLevelSystem', use graph TD. NO SUBGRAPHS.
+- For 'requestFlow', use sequenceDiagram. Define participants first.
+- For 'scalingView', use graph TD. Simple nodes.
+- STRICT SYNTAX: No spaces in node IDs, no special chars, no styling.
 `;
     }
 
@@ -144,12 +195,13 @@ ${requirements.functionalRequirements.slice(0, 5).map((r) => `- ${r}`).join('\n'
       const parsed = JSON.parse(jsonText) as DiagramGeneratorOutput;
 
       // Validate structure
-      if (!parsed.highLevelSystem || !parsed.requestFlow || !parsed.scalingView) {
+      if (!parsed.highLevelSystem || !parsed.requestFlow || !parsed.scalingView || !parsed.cloudArchitecture || !parsed.apiArchitecture) {
         throw new Error('Invalid output structure: missing required diagram fields');
       }
 
       // Basic Mermaid validation
       const validateMermaid = (diagram: string, name: string) => {
+        if (!diagram) return; // Should be caught by structure check
         if (!diagram.includes('graph') && !diagram.includes('sequenceDiagram') && !diagram.includes('flowchart')) {
           logger.warn(`${name} diagram may not be valid Mermaid`, {
             designVersionId: context.designVersionId,
@@ -161,6 +213,8 @@ ${requirements.functionalRequirements.slice(0, 5).map((r) => `- ${r}`).join('\n'
       validateMermaid(parsed.highLevelSystem, 'highLevelSystem');
       validateMermaid(parsed.requestFlow, 'requestFlow');
       validateMermaid(parsed.scalingView, 'scalingView');
+      validateMermaid(parsed.cloudArchitecture, 'cloudArchitecture');
+      validateMermaid(parsed.apiArchitecture, 'apiArchitecture');
 
       logger.info('Diagram generator agent completed', {
         designVersionId: context.designVersionId,

@@ -78,6 +78,7 @@ Your goal is to answer the user's question comprehensively using ONLY the provid
 - Synthesize the information into a coherent summary.
 - Cite sources using [Source X] notation.
 - If results contradict, mention the conflict.
+- **CRITICAL**: Use ONLY the links provided in the 'Search Results'. Never guess, invent, or truncate links.
 - Be concise but professional (Staff Engineer level).`;
 
         const userPrompt = `Question: ${query}\n\nSearch Results:\n${contextText}\n\nAnswer:`;
