@@ -1,0 +1,174 @@
+// Prisma schema for System Design Intelligence Platform
+// Production-grade database modeling with explicit contracts
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String   // Hashed password
+
+  // Security
+  isVerified Boolean  @default(false)
+  
+  // Subscription fields
+  plan               Plan     @default(FREE)
+  subscriptionStatus String?  // active, past_due, canceled, etc.
+  subscriptionId     String?
+  customerId         String?
+  currentPeriodEnd   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects Project[]
+  otps     Otp[]
+  payments Payment[]
+  tokenUsage TokenUsage[]
+  auditLogs AuditLog[]
+
+  @@index([subscriptionId])
+  @@map("users")
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String   // 6-digit code
+  type      String   // 'signup', 'reset_password'
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, expiresAt])
+  @@index([expiresAt])
+  @@map("otps")
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  userId         String
+  amount         Float
+  currency       String
+  status         String   // 'succeeded', 'failed'
+  plan           Plan
+  paymentMethod  String?
+  receiptUrl     String?
+  createdAt      DateTime @default(now())
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designVersions DesignVersion[]
+  tokenUsage     TokenUsage[]
+
+  @@map("projects")
+}
+
+model DesignVersion {
+  id          String   @id @default(cuid())
+  projectId   String
+  version     Int      // Sequential version number (1, 2, 3...)
+  prompt      String   // Original or updated prompt
+  status      String   @default("pending") // 'pending', 'processing', 'completed', 'failed'
+  sharedMemory Json?   // Neural Board: Shared blackboard for all agents'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agentOutputs AgentOutput[]
+  auditLogs    AuditLog[]
+  tokenUsage   TokenUsage[]
+
+  @@unique([projectId, version])
+  @@index([status])
+  @@map("design_versions")
+}
+
+model AgentOutput {
+  id              String   @id @default(cuid())
+  designVersionId String
+  agentType       String   // 'requirement_analyzer', 'system_design', 'tech_stack', 'diagram_generator', etc.
+  status          String   // 'pending', 'processing', 'completed', 'failed'
+  output          Json?    // Structured output from agent
+  error           String?  // Error message if failed
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  designVersion DesignVersion @relation(fields: [designVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([designVersionId, agentType])
+  @@index([designVersionId])
+  @@map("agent_outputs")
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  designVersionId String?
+  userId          String?
+  action          String   // 'created', 'updated', 'agent_started', 'agent_completed', 'agent_failed', 'login', 'plan_upgrade'
+  details         Json?    
+  createdAt       DateTime @default(now())
+
+  designVersion DesignVersion? @relation(fields: [designVersionId], references: [id], onDelete: Cascade)
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([designVersionId])
+  @@map("audit_logs")
+}
+
+model TokenUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  provider  String   // 'gemini', 'groq'
+  model     String   // 'gemini-1.5-flash', 'llama-3.1-70b', etc.
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+  estimatedCost Float  // In USD
+  createdAt DateTime @default(now())
+
+  designVersionId String?
+  agentType       String?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  designVersion DesignVersion? @relation(fields: [designVersionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([provider])
+  @@index([designVersionId])
+  @@map("token_usage")
+}
