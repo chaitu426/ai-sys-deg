@@ -1,0 +1,20 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+module.exports = {
+    preset: 'ts-jest',
+    testEnvironment: 'node',
+    roots: ['<rootDir>/src'],
+    testMatch: ['**/__tests__/**/*.+(ts|tsx)', '**/?(*.)+(spec|test).+(ts|tsx)'],
+    transform: {
+        '^.+\\.(ts|tsx)$': 'ts-jest',
+    },
+    coverageDirectory: 'coverage',
+    collectCoverageFrom: [
+        'src/**/*.{js,ts}',
+        '!src/**/*.d.ts',
+        '!src/**/__tests__/**',
+        '!src/db/migrations/**',
+    ],
+    moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+    },
+};

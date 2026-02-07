@@ -1,0 +1,58 @@
+src/agents/api-design.ts(151,38): error TS2339: Property 'authentication' does not exist on type 'TechStackOutput'.
+src/agents/system-design.ts(99,48): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './tool-runner.js'?
+src/agents/system-design.ts(109,8): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/agents/tech-stack.ts(101,48): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './tool-runner.js'?
+src/agents/tech-stack.ts(111,8): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/api/routes/design.ts(65,62): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../utils/plans.js'?
+src/api/routes/design.ts(605,53): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../utils/doc-generator.js'?
+src/api/routes/design.ts(661,47): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../utils/openapi-generator.js'?
+src/api/routes/payments.ts(2,36): error TS1479: The current file is a CommonJS module whose imports will produce 'require' calls; however, the referenced file is an ECMAScript module and cannot be imported with 'require'. Consider writing a dynamic 'import("@dodopayments/fastify")' call instead.
+  To convert this file to an ECMAScript module, change its file extension to '.mts', or add the field `"type": "module"` to '/home/chaitanya/Documents/sys-deginer-ui/sys-deginer-backend/package.json'.
+src/auth/jwt.ts(10,7): error TS6133: 'logger' is declared but its value is never read.
+src/auth/jwt.ts(39,21): error TS2339: Property 'jwtVerify' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/auth/middleware.ts(20,19): error TS2339: Property 'jwtVerify' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/auth/middleware.ts(48,3): error TS6133: 'reply' is declared but its value is never read.
+src/auth/middleware.ts(51,19): error TS2339: Property 'jwtVerify' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/core/orchestrator.ts(117,13): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/core/orchestrator.ts(156,47): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../utils/event-emitter.js'?
+src/core/orchestrator.ts(209,41): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AgentType'.
+src/core/orchestrator.ts(329,45): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../utils/event-emitter.js'?
+src/db/repositories/project-repository.ts(150,9): error TS2322: Type 'object | null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+  Type 'null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+src/db/repositories/project-repository.ts(207,9): error TS2322: Type 'object | null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+  Type 'null' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+src/index.ts(37,29): error TS6133: 'request' is declared but its value is never read.
+src/index.ts(51,18): error TS18046: 'error' is of type 'unknown'.
+src/index.ts(53,14): error TS18046: 'error' is of type 'unknown'.
+src/llm/gemini-client.ts(61,11): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(body: ChatCompletionCreateParamsNonStreaming, options?: RequestOptions<unknown> | undefined): APIPromise<ChatCompletion>', gave the following error.
+    Type '{ role: string; content: string; }[]' is not assignable to type 'ChatCompletionMessageParam[]'.
+      Type '{ role: string; content: string; }' is not assignable to type 'ChatCompletionMessageParam'.
+        Property 'name' is missing in type '{ role: string; content: string; }' but required in type 'ChatCompletionFunctionMessageParam'.
+  Overload 2 of 3, '(body: ChatCompletionCreateParamsStreaming, options?: RequestOptions<unknown> | undefined): APIPromise<Stream<ChatCompletionChunk>>', gave the following error.
+    Type '{ role: string; content: string; }[]' is not assignable to type 'ChatCompletionMessageParam[]'.
+      Type '{ role: string; content: string; }' is not assignable to type 'ChatCompletionMessageParam'.
+        Property 'name' is missing in type '{ role: string; content: string; }' but required in type 'ChatCompletionFunctionMessageParam'.
+  Overload 3 of 3, '(body: ChatCompletionCreateParamsBase, options?: RequestOptions<unknown> | undefined): APIPromise<ChatCompletion | Stream<...>>', gave the following error.
+    Type '{ role: string; content: string; }[]' is not assignable to type 'ChatCompletionMessageParam[]'.
+      Type '{ role: string; content: string; }' is not assignable to type 'ChatCompletionMessageParam'.
+        Property 'name' is missing in type '{ role: string; content: string; }' but required in type 'ChatCompletionFunctionMessageParam'.
+src/llm/gemini-client.ts(118,11): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(body: ChatCompletionCreateParamsNonStreaming, options?: RequestOptions<unknown> | undefined): APIPromise<ChatCompletion>', gave the following error.
+    Type '{ role: string; content: string; }[]' is not assignable to type 'ChatCompletionMessageParam[]'.
+      Type '{ role: string; content: string; }' is not assignable to type 'ChatCompletionMessageParam'.
+        Property 'name' is missing in type '{ role: string; content: string; }' but required in type 'ChatCompletionFunctionMessageParam'.
+  Overload 2 of 3, '(body: ChatCompletionCreateParamsStreaming, options?: RequestOptions<unknown> | undefined): APIPromise<Stream<ChatCompletionChunk>>', gave the following error.
+    Type '{ role: string; content: string; }[]' is not assignable to type 'ChatCompletionMessageParam[]'.
+      Type '{ role: string; content: string; }' is not assignable to type 'ChatCompletionMessageParam'.
+        Property 'name' is missing in type '{ role: string; content: string; }' but required in type 'ChatCompletionFunctionMessageParam'.
+  Overload 3 of 3, '(body: ChatCompletionCreateParamsBase, options?: RequestOptions<unknown> | undefined): APIPromise<ChatCompletion | Stream<...>>', gave the following error.
+    Type '{ role: string; content: string; }[]' is not assignable to type 'ChatCompletionMessageParam[]'.
+      Type '{ role: string; content: string; }' is not assignable to type 'ChatCompletionMessageParam'.
+        Property 'name' is missing in type '{ role: string; content: string; }' but required in type 'ChatCompletionFunctionMessageParam'.
+src/tools/implementations/cloud-pricing.ts(23,50): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../utils/web-search.js'?
+src/tools/implementations/cloud-pricing.ts(27,41): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/tools/implementations/cloud-pricing.ts(67,13): error TS6133: 'isEstimate' is declared but its value is never read.
+src/tools/implementations/tech-radar.ts(20,50): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../../utils/web-search.js'?
+src/utils/web-search.ts(35,31): error TS7030: Not all code paths return a value.
+src/utils/web-search.ts(35,32): error TS6133: 'i' is declared but its value is never read.

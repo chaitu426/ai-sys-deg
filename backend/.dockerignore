@@ -1,0 +1,23 @@
+# Docker build ignore file
+node_modules
+dist
+.env
+.git
+.github
+.husky
+.vscode
+.prettierrc
+eslint.config.js
+jest.config.js
+tsconfig.json
+mds/
+scripts/
+tests/
+*.log
+*.md
+Dockerfile
+docker-compose.yml
+package-lock.json
+tsc_output.txt
+test-toolbox.ts
+demo.html
