@@ -31,7 +31,7 @@ import { ArtifactsViewer } from './components/center/artifacts-viewer';
 export default function DashboardPage() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
-  const { token } = useAuthStore();
+  const { token, checkAuth } = useAuthStore();
   const { setProject, setActiveVersion, requirements, activeVersion } = useDesignStore();
   const { agentStatuses } = useAgentStore();
   const { setLeftSidebarOpen, setRightSidebarOpen } = useUIStore();
@@ -98,6 +98,19 @@ export default function DashboardPage() {
     }
   }, [workspaceId, token, setProject, setActiveVersion]);
 
+  // Handle GitHub connection callback
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('github_connected') === 'true') {
+        checkAuth();
+        // Clean up URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [checkAuth]);
+
   // View Logic
   const isProcessing = Object.values(agentStatuses).some((s) => s === 'processing');
   const hasStarted = Object.values(agentStatuses).some((s) => s !== 'pending');
@@ -136,7 +149,7 @@ export default function DashboardPage() {
         <ExportDropdown projectId={workspaceId} />
       </div>
 
-      <div className="hidden items-center gap-4 xl:flex">
+      <div className="hidden items-center pl-3 gap-4 xl:flex">
         <LiveMonitor />
       </div>
     </div>
@@ -207,7 +220,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="w-full"
+              className="w-full h-full"
             >
               <ArtifactsViewer />
             </motion.div>

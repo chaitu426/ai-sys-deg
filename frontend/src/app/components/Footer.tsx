@@ -51,8 +51,8 @@ export function Footer() {
       <div className="text-muted-foreground mx-auto mt-6 flex max-w-6xl flex-col gap-2 text-xs md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
           </span>
 
           <span className="text-foreground">All agents operational</span>

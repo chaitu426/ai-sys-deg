@@ -10,14 +10,14 @@ export const PLAN_LIMITS = {
     maxProjects: 3,
     maxProjectsPerMonth: 3,
     agents: [
+      'repository_analyzer',
       'requirement_analyzer',
       'system_design',
       'tech_stack',
       'diagram_generator',
       'api_design',
     ],
-    canExport: false,
-    exportFormats: [] as string[],
+    canAccessVibeCoder: false,
     historyDays: 7,
     price: 0,
   },
@@ -35,8 +35,7 @@ export const PLAN_LIMITS = {
       'deployment_strategy',
       'failure_mode_analyzer',
     ],
-    canExport: false,
-    exportFormats: [] as string[],
+    canAccessVibeCoder: true,
     historyDays: 90,
     price: 19,
   },
@@ -54,8 +53,7 @@ export const PLAN_LIMITS = {
       'deployment_strategy',
       'failure_mode_analyzer',
     ],
-    canExport: true,
-    exportFormats: ['pdf', 'png', 'markdown', 'drawio', 'json'],
+    canAccessVibeCoder: true,
     historyDays: -1, // Unlimited
     price: 49,
   },
@@ -65,6 +63,11 @@ export const FEATURES = {
   requirement_analyzer: {
     name: 'Requirement Analysis',
     description: 'AI analyzes your prompt to generate functional requirements.',
+    plans: [Plan.FREE, Plan.PRO, Plan.PREMIUM],
+  },
+  repository_analyzer: {
+    name: 'Repository Analysis',
+    description: 'Extracts architectural insights from your GitHub repository.',
     plans: [Plan.FREE, Plan.PRO, Plan.PREMIUM],
   },
   system_design: {
@@ -102,7 +105,11 @@ export const FEATURES = {
     description: 'Identify potential points of failure and mitigation strategies.',
     plans: [Plan.PRO, Plan.PREMIUM],
   },
-
+  vibe_coder: {
+    name: 'Vibe Coder',
+    description: 'AI-optimized, step-by-step coding prompts for your system.',
+    plans: [Plan.PRO, Plan.PREMIUM],
+  },
 };
 
 /**

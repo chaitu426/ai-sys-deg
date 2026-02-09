@@ -19,9 +19,9 @@ export function WorkspaceShell({ children, leftPanel, rightPanel, topBar }: Work
     <div className="bg-background text-foreground selection:bg-primary/20 flex h-screen w-full overflow-hidden font-sans">
       {/* Background Ambient Glow - Refined for Subtlety */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="bg-primary/5 absolute -top-[20%] -left-[10%] h-[60%] w-[60%] rounded-full opacity-60 mix-blend-screen blur-[150px]" />
-        <div className="absolute -right-[10%] -bottom-[20%] h-[60%] w-[60%] rounded-full bg-indigo-900/10 opacity-60 mix-blend-screen blur-[150px]" />
-        <div className="bg-accent/5 absolute top-[40%] left-[40%] h-[40%] w-[40%] rounded-full opacity-40 blur-[180px]" />
+        <div className="bg-zinc-500/5 absolute -top-[20%] -left-[10%] h-[60%] w-[60%] rounded-full opacity-60 mix-blend-screen blur-[150px]" />
+        <div className="absolute -right-[10%] -bottom-[20%] h-[60%] w-[60%] rounded-full bg-zinc-500/5 opacity-60 mix-blend-screen blur-[150px]" />
+        <div className="bg-white/5 absolute top-[40%] left-[40%] h-[40%] w-[40%] rounded-full opacity-40 blur-[180px]" />
       </div>
 
       {/* Left Sidebar */}

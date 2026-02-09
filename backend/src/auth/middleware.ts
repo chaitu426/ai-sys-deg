@@ -14,7 +14,19 @@ const logger = getLogger();
  */
 export async function authenticate(request: any, reply: any): Promise<void> {
   try {
-    await request.jwtVerify();
+    // 1. Try default jwtVerify (checks headers)
+    try {
+      await request.jwtVerify();
+    } catch (headerError) {
+      // 2. If header is missing/invalid, try from query param for specifically allowed routes
+      const token = request.query?.token;
+      if (token) {
+        const decoded = await request.server.jwt.verify(token);
+        request.user = decoded;
+      } else {
+        throw headerError; // Re-throw if no query token either
+      }
+    }
 
     // Attach user payload to request
     const payload = request.user;

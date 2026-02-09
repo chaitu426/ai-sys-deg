@@ -33,13 +33,39 @@ import {
   Zap,
   Terminal,
   Cloud,
+  StickyNote,
+  Type,
+  Maximize2,
+  MousePointer2,
+  RotateCcw,
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { useDesignStore } from '../../../stores/design.store';
+import { useDesign } from '../../../hooks/use-design';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+const ICON_MAP: Record<string, any> = {
+  database: Database,
+  shield: ShieldCheck,
+  globe: Globe,
+  server: Server,
+  zap: Zap,
+  cloud: Cloud,
+  cpu: Cpu,
+  terminal: Terminal,
+};
 
 // Enhanced Custom Node Component with Support for multiple icons/logos
 const SystemNode = ({ data, id }: any) => {
-  const Icon = data.icon || Server;
+  let Icon = Server;
+  if (typeof data.icon === 'string') {
+    Icon = ICON_MAP[data.icon] || Server;
+  } else if (typeof data.icon === 'function' || (typeof data.icon === 'object' && data.icon && data.icon.$$typeof)) {
+    // If it's a function or a React component object (like memo/forwardRef)
+    Icon = data.icon;
+  }
+
   const { setNodes } = useReactFlow();
 
   const onDelete = (e: React.MouseEvent) => {
@@ -82,8 +108,73 @@ const SystemNode = ({ data, id }: any) => {
   );
 };
 
+const StickyNode = ({ data, id }: any) => {
+  const { setNodes } = useReactFlow();
+  const onDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNodes((nds) => nds.filter((node) => node.id !== id));
+  };
+  const onBlur = (e: any) => {
+    const newLabel = e.target.innerText;
+    setNodes((nds) => nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, label: newLabel } } : n)));
+  };
+  return (
+    <div className="bg-amber-100/90 text-amber-900 shadow-amber-900/10 min-h-[150px] min-w-[150px] rounded-sm p-4 shadow-xl backdrop-blur-sm">
+      <div className="mb-2 flex items-start justify-between">
+        <StickyNote size={14} className="opacity-50" />
+        <button
+          onClick={onDelete}
+          className="hover:bg-amber-200 rounded p-1 opacity-0 transition-all group-hover:opacity-100"
+        >
+          <Trash2 size={12} />
+        </button>
+      </div>
+      <div
+        contentEditable
+        onBlur={onBlur}
+        suppressContentEditableWarning
+        className="text-xs font-medium outline-none"
+      >
+        {data.label}
+      </div>
+    </div>
+  );
+};
+
+const TextNode = ({ data, id }: any) => {
+  const { setNodes } = useReactFlow();
+  const onDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNodes((nds) => nds.filter((node) => node.id !== id));
+  };
+  const onBlur = (e: any) => {
+    const newLabel = e.target.innerText;
+    setNodes((nds) => nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, label: newLabel } } : n)));
+  };
+  return (
+    <div className="group relative min-w-[100px] p-2">
+      <div
+        contentEditable
+        onBlur={onBlur}
+        suppressContentEditableWarning
+        className="text-foreground text-sm font-bold outline-none"
+      >
+        {data.label}
+      </div>
+      <button
+        onClick={onDelete}
+        className="bg-destructive/10 text-destructive absolute -top-4 -right-4 rounded p-1 opacity-0 transition-all group-hover:opacity-100"
+      >
+        <Trash2 size={10} />
+      </button>
+    </div>
+  );
+};
+
 const nodeTypes = {
   system: SystemNode,
+  sticky: StickyNode,
+  text: TextNode,
 };
 
 // Parser to convert Mermaid string to React Flow nodes/edges
@@ -94,36 +185,17 @@ const parseMermaidToFlow = (mermaid: string) => {
   const nodeMap = new Map<string, { label: string; level: number; index: number }>();
   const adjacencyList = new Map<string, string[]>();
 
+  const isSequence = mermaid.toLowerCase().includes('sequencediagram');
+
   const getIcon = (label: string) => {
     const lowerLabel = label.toLowerCase();
-    if (
-      lowerLabel.includes('db') ||
-      lowerLabel.includes('sql') ||
-      lowerLabel.includes('redis') ||
-      lowerLabel.includes('mongo') ||
-      lowerLabel.includes('storage')
-    )
-      return Database;
-    if (
-      lowerLabel.includes('auth') ||
-      lowerLabel.includes('security') ||
-      lowerLabel.includes('shield')
-    )
-      return ShieldCheck;
-    if (lowerLabel.includes('client') || lowerLabel.includes('app') || lowerLabel.includes('web'))
-      return Globe;
-    if (
-      lowerLabel.includes('gateway') ||
-      lowerLabel.includes('proxy') ||
-      lowerLabel.includes('lb') ||
-      lowerLabel.includes('balancer')
-    )
-      return Server;
-    if (lowerLabel.includes('fast') || lowerLabel.includes('quick') || lowerLabel.includes('cache'))
-      return Zap;
-    if (lowerLabel.includes('cloud') || lowerLabel.includes('aws') || lowerLabel.includes('azure'))
-      return Cloud;
-    return Cpu;
+    if (lowerLabel.includes('db') || lowerLabel.includes('sql') || lowerLabel.includes('redis') || lowerLabel.includes('mongo') || lowerLabel.includes('storage')) return 'database';
+    if (lowerLabel.includes('auth') || lowerLabel.includes('security') || lowerLabel.includes('shield')) return 'shield';
+    if (lowerLabel.includes('client') || lowerLabel.includes('app') || lowerLabel.includes('web')) return 'globe';
+    if (lowerLabel.includes('gateway') || lowerLabel.includes('proxy') || lowerLabel.includes('lb') || lowerLabel.includes('balancer')) return 'server';
+    if (lowerLabel.includes('fast') || lowerLabel.includes('quick') || lowerLabel.includes('cache')) return 'zap';
+    if (lowerLabel.includes('cloud') || lowerLabel.includes('aws') || lowerLabel.includes('azure')) return 'cloud';
+    return 'cpu';
   };
 
   const getType = (label: string) => {
@@ -133,30 +205,75 @@ const parseMermaidToFlow = (mermaid: string) => {
     if (lowerLabel.includes('client') || lowerLabel.includes('app')) return 'Frontend';
     if (lowerLabel.includes('service') || lowerLabel.includes('api')) return 'Backend';
     if (lowerLabel.includes('cache')) return 'Cache';
-    return 'Compute';
+    return isSequence ? 'Actor' : 'Compute';
   };
 
-  // First pass: collect all nodes and edges
+  if (isSequence) {
+    // Parse Sequence Diagram
+    let participants: string[] = [];
+    lines.forEach((line) => {
+      const cleanLine = line.trim();
+      if (!cleanLine || cleanLine.startsWith('sequenceDiagram')) return;
+
+      // Match participants
+      const partMatch = cleanLine.match(/participant\s+([a-zA-Z0-9_-]+)(?:\s+as\s+(".*?"|.*?))?/);
+      if (partMatch) {
+        const id = partMatch[1];
+        const label = partMatch[2] ? partMatch[2].replace(/"/g, '') : id;
+        if (!nodeMap.has(id)) {
+          nodeMap.set(id, { label, level: 0, index: nodeMap.size });
+          participants.push(id);
+        }
+        return;
+      }
+
+      // Match messages/arrows
+      const arrowMatch = cleanLine.match(/([a-zA-Z0-9_-]+)\s*(-+>>?|--+>>?)\s*([a-zA-Z0-9_-]+)(?:\s*:\s*(.*))?/);
+      if (arrowMatch) {
+        const [_, srcId, type, tgtId, label] = arrowMatch;
+        if (!nodeMap.has(srcId)) nodeMap.set(srcId, { label: srcId, level: 0, index: nodeMap.size });
+        if (!nodeMap.has(tgtId)) nodeMap.set(tgtId, { label: tgtId, level: 0, index: nodeMap.size });
+
+        edges.push({
+          id: `e-${srcId}-${tgtId}-${edges.length}`,
+          source: srcId,
+          target: tgtId,
+          label: label,
+          type: 'smoothstep',
+          animated: true,
+          style: { stroke: 'var(--primary)', strokeWidth: 2 },
+          labelStyle: { fill: 'var(--foreground)', fontSize: 10, fontWeight: 'bold' },
+        });
+      }
+    });
+
+    // Layout sequence diagram horizontally
+    const SPACING = 250;
+    Array.from(nodeMap.entries()).forEach(([id, data], i) => {
+      nodes.push({
+        id,
+        type: 'system',
+        position: { x: i * SPACING + 100, y: 100 },
+        data: { label: data.label, type: getType(data.label), icon: getIcon(data.label) },
+      });
+    });
+
+    return { nodes, edges };
+  }
+
+  // Standard Graph Parser (Flowchart/Architecture)
   lines.forEach((line, index) => {
     const cleanLine = line.trim();
     if (!cleanLine || cleanLine.startsWith('graph') || cleanLine.startsWith('subgraph')) return;
 
     const edgeMatch = cleanLine.match(
-      /([a-zA-Z0-9_-]+)(?:\[(.*?)\])?\s*--+>\s*([a-zA-Z0-9_-]+)(?:\[(.*?)\])?/
+      /([a-zA-Z0-9_-]+)(?:\[(.*?)\])?\s*(-+>>?|--+>>?)\s*([a-zA-Z0-9_-]+)(?:\[(.*?)\])?/
     );
 
     if (edgeMatch) {
-      const [_, srcId, srcLabel, tgtId, tgtLabel] = edgeMatch;
-
-      // Register nodes
-      if (!nodeMap.has(srcId)) {
-        nodeMap.set(srcId, { label: srcLabel || srcId, level: -1, index: nodeMap.size });
-      }
-      if (!nodeMap.has(tgtId)) {
-        nodeMap.set(tgtId, { label: tgtLabel || tgtId, level: -1, index: nodeMap.size });
-      }
-
-      // Build adjacency list for hierarchical layout
+      const [_, srcId, srcLabel, type, tgtId, tgtLabel] = edgeMatch;
+      if (!nodeMap.has(srcId)) nodeMap.set(srcId, { label: srcLabel || srcId, level: -1, index: nodeMap.size });
+      if (!nodeMap.has(tgtId)) nodeMap.set(tgtId, { label: tgtLabel || tgtId, level: -1, index: nodeMap.size });
       if (!adjacencyList.has(srcId)) adjacencyList.set(srcId, []);
       adjacencyList.get(srcId)!.push(tgtId);
 
@@ -167,22 +284,22 @@ const parseMermaidToFlow = (mermaid: string) => {
         style: { stroke: 'var(--primary)', strokeWidth: 2 },
         animated: srcId.toLowerCase().includes('client'),
       });
+    } else {
+      // Static node definitions: A["Label"]
+      const nodeOnlyMatch = cleanLine.match(/([a-zA-Z0-9_-]+)\[(.*?)\]/);
+      if (nodeOnlyMatch) {
+        const [_, id, label] = nodeOnlyMatch;
+        if (!nodeMap.has(id)) nodeMap.set(id, { label: label.replace(/"/g, ''), level: -1, index: nodeMap.size });
+      }
     }
   });
 
   // Calculate hierarchical levels using BFS
   const calculateLevels = () => {
-    // Find root nodes (nodes with no incoming edges)
     const incomingCount = new Map<string, number>();
     nodeMap.forEach((_, id) => incomingCount.set(id, 0));
-
-    edges.forEach((edge) => {
-      incomingCount.set(edge.target, (incomingCount.get(edge.target) || 0) + 1);
-    });
-
+    edges.forEach((edge) => incomingCount.set(edge.target, (incomingCount.get(edge.target) || 0) + 1));
     const roots = Array.from(nodeMap.keys()).filter((id) => incomingCount.get(id) === 0);
-
-    // BFS to assign levels
     const queue = roots.map((id) => ({ id, level: 0 }));
     const visited = new Set<string>();
 
@@ -190,25 +307,16 @@ const parseMermaidToFlow = (mermaid: string) => {
       const { id, level } = queue.shift()!;
       if (visited.has(id)) continue;
       visited.add(id);
-
       const nodeData = nodeMap.get(id)!;
       nodeData.level = Math.max(nodeData.level, level);
-
       const children = adjacencyList.get(id) || [];
-      children.forEach((childId) => {
-        queue.push({ id: childId, level: level + 1 });
-      });
+      children.forEach((childId) => queue.push({ id: childId, level: level + 1 }));
     }
-
-    // Assign level 0 to any unvisited nodes
-    nodeMap.forEach((data, id) => {
-      if (data.level === -1) data.level = 0;
-    });
+    nodeMap.forEach((data, id) => { if (data.level === -1) data.level = 0; });
   };
 
   calculateLevels();
 
-  // Create nodes with hierarchical positioning
   const HORIZONTAL_SPACING = 300;
   const VERTICAL_SPACING = 200;
   const levelCounts = new Map<number, number>();
@@ -221,15 +329,8 @@ const parseMermaidToFlow = (mermaid: string) => {
     nodes.push({
       id,
       type: 'system',
-      position: {
-        x: countAtLevel * HORIZONTAL_SPACING + 100,
-        y: level * VERTICAL_SPACING + 100,
-      },
-      data: {
-        label: data.label,
-        type: getType(data.label),
-        icon: getIcon(data.label),
-      },
+      position: { x: countAtLevel * HORIZONTAL_SPACING + 100, y: level * VERTICAL_SPACING + 100 },
+      data: { label: data.label, type: getType(data.label), icon: getIcon(data.label) },
     });
   });
 
@@ -245,8 +346,9 @@ function FlowInner({
   projectId: string;
   type: string;
 }) {
-  const { getNodes, getEdges } = useReactFlow();
+  const { getNodes, getEdges, zoomTo, fitView } = useReactFlow();
   const { whiteboardData, setWhiteboardData } = useDesignStore();
+  const { saveWhiteboard } = useDesign(projectId);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -255,9 +357,9 @@ function FlowInner({
   // Load state from store or parse Mermaid
   useEffect(() => {
     const savedData = whiteboardData[`${projectId}_${type}`];
-    if (savedData) {
-      setNodes(savedData.nodes || []);
-      setEdges(savedData.edges || []);
+    if (savedData && savedData.nodes?.length > 0) {
+      setNodes(savedData.nodes);
+      setEdges(savedData.edges);
     } else if (initialMermaid) {
       const { nodes: parsedNodes, edges: parsedEdges } = parseMermaidToFlow(initialMermaid);
       setNodes(parsedNodes);
@@ -267,15 +369,20 @@ function FlowInner({
 
   // Internal save whenever items change (debounce)
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const currentNodes = getNodes();
       const currentEdges = getEdges();
       if (currentNodes.length > 0) {
+        setIsSaving(true);
+        // Local Save
         setWhiteboardData(projectId, type, { nodes: currentNodes, edges: currentEdges });
+        // Remote Save
+        await saveWhiteboard(type, { nodes: currentNodes, edges: currentEdges });
+        setIsSaving(false);
       }
-    }, 1000);
+    }, 2000);
     return () => clearTimeout(timer);
-  }, [nodes, edges, getNodes, getEdges, projectId, type, setWhiteboardData]);
+  }, [nodes, edges, getNodes, getEdges, projectId, type, setWhiteboardData, saveWhiteboard]);
 
   const onConnect = useCallback(
     (params: Connection) =>
@@ -298,24 +405,42 @@ function FlowInner({
 
   const downloadImage = () => {
     if (flowWrapper.current) {
+      const toastId = toast.loading('Generating architecture snapshot...');
       toPng(flowWrapper.current, {
-        filter: (node) => {
-          if (
+        filter: (node: HTMLElement) => {
+          const isControl =
             node?.classList?.contains('react-flow__controls') ||
-            node?.classList?.contains('react-flow__minimap')
-          ) {
-            return false;
-          }
-          return true;
+            node?.classList?.contains('react-flow__minimap');
+          return !isControl;
         },
-        backgroundColor: '#0a0a0a',
-      }).then((dataUrl) => {
-        const link = document.createElement('a');
-        link.download = `system-design-${type}.png`;
-        link.href = dataUrl;
-        link.click();
-      });
+      })
+        .then((dataUrl) => {
+          const link = document.createElement('a');
+          link.download = `system-design-${type}.png`;
+          link.href = dataUrl;
+          link.click();
+          toast.success('Diagram exported to PNG', { id: toastId });
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error('Failed to capture snapshot', { id: toastId });
+        });
     }
+  };
+
+  const addCustomNode = (nodeType: string, label: string, data: any = {}) => {
+    const id = `${nodeType}_${Math.random().toString(36).substr(2, 9)}`;
+    const newNode: Node = {
+      id,
+      type: nodeType,
+      position: { x: Math.random() * 200 + 100, y: Math.random() * 200 + 100 },
+      data: { label, ...data },
+    };
+    setNodes((nds) => nds.concat(newNode));
+    toast.success(`${label} placed on canvas`, {
+      icon: <Plus size={14} />,
+      duration: 1500,
+    });
   };
 
   return (
@@ -323,15 +448,62 @@ function FlowInner({
       className="bg-background relative flex h-full w-full flex-col overflow-hidden"
       ref={flowWrapper}
     >
+      {/* Tool Dock (Left Side) */}
+      <div className="absolute top-1/2 left-6 z-10 flex -translate-y-1/2 flex-col gap-2">
+        <div className="bg-card/90 border-border flex flex-col gap-1 rounded-2xl border p-1.5 shadow-2xl backdrop-blur-xl">
+          <ToolButton
+            onClick={() => addCustomNode('system', 'New Microservice', { type: 'Backend', icon: 'server' })}
+            icon={Plus}
+            tooltip="Add System Component"
+          />
+          <ToolButton
+            onClick={() => addCustomNode('sticky', 'New architectural note...', {})}
+            icon={StickyNote}
+            tooltip="Add Sticky Note"
+          />
+          <ToolButton
+            onClick={() => addCustomNode('text', 'Project Title', {})}
+            icon={Type}
+            tooltip="Add Text Label"
+          />
+          <div className="bg-border my-1 h-px w-full" />
+          <ToolButton
+            onClick={() => fitView()}
+            icon={Maximize2}
+            tooltip="Fit View"
+          />
+        </div>
+      </div>
+
+      {/* Persistence State Indicator */}
+      <div className="absolute top-6 right-6 z-10">
+        <div className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-500",
+          isSaving ? "bg-primary/10 text-primary animate-pulse" : "bg-emerald-500/10 text-emerald-500"
+        )}>
+          {isSaving ? (
+            <>
+              <RotateCcw size={10} className="animate-spin" />
+              Syncing Changes...
+            </>
+          ) : (
+            <>
+              <Save size={10} />
+              Saved to Cloud
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Toolbar */}
       <div className="absolute top-6 left-6 z-10 flex flex-col gap-4">
         <div className="bg-card/90 border-border flex rounded-2xl border p-1.5 shadow-2xl backdrop-blur-xl">
           <button
-            onClick={() => addNode('Service', 'New API', Terminal)}
+            onClick={() => addCustomNode('system', 'New API', { type: 'Service', icon: 'terminal' })}
             className="hover:bg-primary/10 text-muted-foreground hover:text-primary group flex items-center gap-2 rounded-xl p-3 px-4 transition-all"
           >
             <Plus size={18} className="transition-transform duration-300 group-hover:rotate-90" />
-            <span className="text-[10px] font-black tracking-widest uppercase">Add Node</span>
+            <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">Add Block</span>
           </button>
           <div className="bg-border mx-1 w-px" />
           <button
@@ -339,7 +511,7 @@ function FlowInner({
             className="hover:bg-primary/5 text-muted-foreground hover:text-primary flex items-center gap-2 rounded-xl p-3 px-4 transition-all"
           >
             <ImageIcon size={18} />
-            <span className="text-[10px] font-black tracking-widest uppercase">Export PNG</span>
+            <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">PNG</span>
           </button>
         </div>
 
@@ -347,40 +519,29 @@ function FlowInner({
           <div className="border-border mb-1 flex items-center gap-2 border-b pb-3">
             <Layers size={14} className="text-primary" />
             <h4 className="text-muted-foreground/80 text-[10px] font-black tracking-[0.2em] uppercase">
-              Stack Blocks
+              {type === 'scaling' ? 'Scaling Blocks' : type === 'cloud' ? 'Cloud Resources' : type === 'api' ? 'API Components' : 'General Blocks'}
             </h4>
           </div>
-          <div className="grid grid-cols-1 gap-2">
-            <TemplateButton
-              onClick={() => addNode('Database', 'Redis Cache', Zap)}
-              icon={Zap}
-              label="Redis Cache"
-              color="text-red-500"
-            />
-            <TemplateButton
-              onClick={() => addNode('Infra', 'K8s Cluster', Cloud)}
-              icon={Cloud}
-              label="K8s Cluster"
-              color="text-blue-500"
-            />
-            <TemplateButton
-              onClick={() => addNode('Database', 'Postgres', Database)}
-              icon={Database}
-              label="Postgres DB"
-              color="text-amber-500"
-            />
-            <TemplateButton
-              onClick={() => addNode('Server', 'Node.js API', Server)}
-              icon={Server}
-              label="Node.js API"
-              color="text-emerald-500"
-            />
-            <TemplateButton
-              onClick={() => addNode('Security', 'Auth Service', ShieldCheck)}
-              icon={ShieldCheck}
-              label="Auth Service"
-              color="text-indigo-500"
-            />
+          <div className="grid grid-cols-1 gap-1">
+            {type === 'scaling' ? (
+              <>
+                <TemplateButton onClick={() => addCustomNode('system', 'Load Balancer', { type: 'Infra', icon: 'server' })} icon={Server} label="Load Balancer" color="text-sky-500" />
+                <TemplateButton onClick={() => addCustomNode('system', 'Auto Scaling Group', { type: 'Infra', icon: 'cpu' })} icon={Cpu} label="Auto Scaling" color="text-orange-500" />
+                <TemplateButton onClick={() => addCustomNode('system', 'Read Replica', { type: 'Database', icon: 'database' })} icon={Database} label="Read Replica" color="text-amber-500" />
+              </>
+            ) : type === 'cloud' ? (
+              <>
+                <TemplateButton onClick={() => addCustomNode('system', 'VPC / Subnet', { type: 'Network', icon: 'globe' })} icon={Globe} label="VPC Network" color="text-blue-500" />
+                <TemplateButton onClick={() => addCustomNode('system', 'S3 Bucket', { type: 'Storage', icon: 'database' })} icon={Database} label="Cloud Storage" color="text-green-500" />
+                <TemplateButton onClick={() => addCustomNode('system', 'Lambda / Function', { type: 'Compute', icon: 'zap' })} icon={Zap} label="Serverless Fn" color="text-violet-500" />
+              </>
+            ) : (
+              <>
+                <TemplateButton onClick={() => addCustomNode('system', 'Redis Cache', { type: 'Database', icon: 'zap' })} icon={Zap} label="Redis Cache" color="text-red-500" />
+                <TemplateButton onClick={() => addCustomNode('system', 'Postgres', { type: 'Database', icon: 'database' })} icon={Database} label="Postgres DB" color="text-amber-500" />
+                <TemplateButton onClick={() => addCustomNode('system', 'Microservice', { type: 'Backend', icon: 'cpu' })} icon={Cpu} label="Microservice" color="text-emerald-500" />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -430,14 +591,29 @@ function TemplateButton({ icon: Icon, label, onClick, color }: any) {
   return (
     <button
       onClick={onClick}
-      className="hover:bg-muted/50 text-muted-foreground hover:text-foreground group hover:border-border/50 flex w-full items-center gap-3 rounded-xl border border-transparent p-2.5 text-left transition-all"
+      className="hover:bg-muted/50 text-muted-foreground hover:text-foreground group hover:border-border/50 flex w-full items-center gap-3 rounded-md border border-transparent p-2 text-left transition-all"
     >
       <div
-        className={`bg-card border-border rounded-lg border p-2 shadow-sm transition-all duration-300 group-hover:scale-110 ${color}`}
+        className={cn(
+          'bg-card border-border rounded-md border p-1.5 shadow-sm transition-all duration-300 group-hover:scale-110',
+          color
+        )}
       >
-        <Icon size={14} />
+        <Icon size={12} />
       </div>
-      <span className="text-[11px] font-bold tracking-tight">{label}</span>
+      <span className="text-[10px] font-bold tracking-tight">{label}</span>
+    </button>
+  );
+}
+
+function ToolButton({ icon: Icon, onClick, tooltip }: any) {
+  return (
+    <button
+      onClick={onClick}
+      title={tooltip}
+      className="hover:bg-primary/10 text-muted-foreground hover:text-primary flex h-9 w-9 items-center justify-center rounded-xl transition-all active:scale-90"
+    >
+      <Icon size={18} />
     </button>
   );
 }

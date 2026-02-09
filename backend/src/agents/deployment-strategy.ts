@@ -56,9 +56,15 @@ You MUST output ONLY a valid JSON object. No markdown, no explanations, no code 
 5. Rollback strategies must be fast and automated
 6. Include monitoring for both system health and business signals
 
-## Tool Usage
 - Use deep_research tool to research modern CI/CD patterns or cloud-specific deployment services
 - Include any research sources in the researchSources field
+
+REPOSITORY AWARENESS (CONDITIONAL):
+- If "repositoryAnalyzer" results are provided, you are in "Brownfield" mode.
+- Align your deployment strategy with existing CI/CD tools (e.g., GitHub Actions, Jenkins) or IaC patterns found in the repository.
+- Use the user prompt with EQUAL WEIGHT to expand or modify the strategy.
+- If you propose a new deployment model that differs from the existing repo (e.g., moving from VM to Containerized), you MUST include a "justification" in the description.
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode.
 
 ## Critical Rules
 - Output ONLY raw JSON
@@ -89,6 +95,12 @@ Tech Stack:
 - Backend: ${techStack.backend.framework} on ${techStack.backend.runtime}
 - Infrastructure: ${techStack.infrastructure.compute}
 - Monitoring: ${techStack.infrastructure.monitoring}
+
+REPOSITORY CONTEXT (Existing Deployment/Infrastructure):
+${context.previousOutputs.repositoryAnalyzer ? `
+Existing Tech Stack: ${JSON.stringify((context.previousOutputs.repositoryAnalyzer as any).techStack)}
+Logical Approach: ${(context.previousOutputs.repositoryAnalyzer as any).logicalApproach}
+` : 'No existing repository context provided.'}
 
 Fault Tolerance:
 - Redundancy: ${design.faultTolerance.redundancyApproach}

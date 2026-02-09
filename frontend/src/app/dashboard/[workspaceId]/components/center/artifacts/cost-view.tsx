@@ -126,13 +126,13 @@ export function CostView({ data }: { data: CostEstimation }) {
         )}
         {data.costOptimization && (
           <div className="space-y-4">
-            <h4 className="flex items-center gap-2 text-sm font-bold tracking-widest text-emerald-500 uppercase">
+            <h4 className="flex items-center gap-2 text-sm font-bold tracking-widest text-white uppercase">
               <Lightbulb size={16} /> Optimization
             </h4>
-            <ul className="space-y-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-5">
+            <ul className="space-y-2 rounded-lg border border-white/20 bg-white/5 p-5">
               {data.costOptimization.map((opt, i) => (
                 <li key={i} className="text-foreground/80 flex gap-2 text-xs">
-                  <CheckCircle size={12} className="mt-0.5 shrink-0 text-emerald-500" />
+                  <CheckCircle size={12} className="mt-0.5 shrink-0 text-white" />
                   {typeof opt === 'string' ? opt : (opt as any).title || (opt as any).description || JSON.stringify(opt)}
                 </li>
               ))}

@@ -19,10 +19,9 @@ export function AgentControlPanel() {
   const { user } = useAuthStore();
   const { pauseWorkflow, resumeWorkflow } = useDesign(workspaceId);
   const [isActionLoading, setIsActionLoading] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
 
   const userPlan = (user?.plan as Plan) || Plan.FREE;
-  const allowedAgents = PLAN_LIMITS[userPlan]?.agents || [];
+  const allowedAgents = (PLAN_LIMITS[userPlan]?.agents || []) as string[];
 
   const isStarted = Object.values(agentStatuses).some((s) => s !== 'pending');
   const isWorkflowComplete = allowedAgents.every(
@@ -50,134 +49,144 @@ export function AgentControlPanel() {
   };
 
   return (
-    <div className="space-y-4 p-2">
-      <div className="flex items-center justify-between px-1">
-        <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
-          AI Pipeline
-        </p>
+    <div className="relative space-y-1">
+      {/* Header and Controls */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          {isStarted && !isWorkflowComplete && (
+            <div className="flex h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+          )}
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            Pipeline
+          </span>
+        </div>
 
         {isStarted && !isWorkflowComplete && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {isPaused ? (
               <button
                 onClick={handleResume}
                 disabled={isActionLoading}
-                className="flex items-center gap-1.5 rounded bg-emerald-500/10 px-2 py-1 text-[9px] font-bold text-emerald-500 uppercase transition-colors hover:bg-emerald-500/20 disabled:opacity-50"
+                className="flex h-6 items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-[9px] font-bold text-white uppercase transition-all hover:bg-white/20 disabled:opacity-50 border border-white/5"
               >
                 <Play size={10} fill="currentColor" />
-                Start
+                Resume
               </button>
             ) : (
               <button
                 onClick={handlePause}
                 disabled={isActionLoading}
-                className="flex items-center gap-1.5 rounded bg-amber-500/10 px-2 py-1 text-[9px] font-bold text-amber-500 uppercase transition-colors hover:bg-amber-500/20 disabled:opacity-50"
+                className="flex h-6 items-center gap-1.5 rounded-md bg-zinc-800/50 px-2 py-1 text-[9px] font-bold text-zinc-400 uppercase transition-all hover:bg-zinc-800 disabled:opacity-50 border border-white/5"
               >
                 <Pause size={10} fill="currentColor" />
-                Pause
+                Wait
               </button>
             )}
           </div>
         )}
       </div>
 
-      {ORDERED_AGENTS.map((agent) => {
+      {/* Vertical Line */}
+      <div className="absolute top-10 bottom-2 left-[9px] w-[2px] bg-border/40" />
+
+      {ORDERED_AGENTS.map((agent, index) => {
         const status = agentStatuses[agent];
         const isRunning = currentAgent === agent && status === 'processing';
         const isOptional = OPTIONAL_AGENTS.includes(agent);
+        const isLocked = !allowedAgents.includes(agent);
 
         return (
           <motion.div
             key={agent}
             layout
-            transition={{ duration: 0.25, ease: 'easeOut' }}
             className={cn(
-              'flex items-center gap-3 rounded-md border px-3 py-2 text-left',
-              'transition-colors',
-              isRunning
-                ? 'border-primary/60 bg-primary/5'
-                : isLocked
-                  ? 'border-border/20 bg-muted/5 opacity-60'
-                  : 'border-border/40 bg-background hover:bg-muted/30'
+              'group relative flex items-start gap-4 pb-4 last:pb-0',
+              isLocked && "opacity-50 grayscale-[0.5]"
             )}
           >
-            {/* Status Icon */}
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+            {/* Status Indicator Point */}
+            <div className="relative z-10 mt-1 flex h-5 w-5 shrink-0 items-center justify-center">
               {isLocked ? (
-                <Lock className="text-muted-foreground/60 h-3 w-3" />
+                <div className="flex h-3 w-3 rounded-full border-2 border-dashed border-muted-foreground/30 bg-muted/10 flex items-center justify-center">
+                  <Lock className="h-2 w-2 text-muted-foreground/40" />
+                </div>
               ) : status === 'completed' ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <div className="flex h-4 w-4 items-center justify-center rounded-full">
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                </div>
               ) : status === 'processing' ? (
-                <Loader2 className="text-primary h-4 w-4 animate-spin" />
+                <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-black shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+                  <Loader2 className="h-3 w-3 animate-spin text-white" />
+                </div>
               ) : status === 'failed' ? (
-                isOptional ? (
-                  <div className="relative">
-                    <Circle className="h-4 w-4 text-amber-500/50" />
-                    <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-amber-500">!</div>
-                  </div>
-                ) : (
-                  <XCircle className="text-destructive h-4 w-4" />
-                )
+                <div className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900",
+                  isOptional ? "text-zinc-500" : "text-zinc-300"
+                )}>
+                  {isOptional ? (
+                    <span className="text-[10px] font-bold">!</span>
+                  ) : (
+                    <XCircle className="h-2.5 w-2.5" />
+                  )}
+                </div>
               ) : (
-                <Circle className="text-muted-foreground/40 h-3 w-3" />
+                <div className="h-3 w-3 rounded-full border-2 border-border/60 bg-muted/20" />
               )}
             </div>
 
-            {/* Label */}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span
-                  className={cn(
-                    'truncate text-xs font-medium',
-                    isLocked && 'text-muted-foreground'
-                  )}
-                >
+            {/* Content Body */}
+            <div className="min-w-0 flex-1 pt-0.5">
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  'text-[11px] font-semibold transition-colors',
+                  status === 'processing' ? 'text-foreground' : 'text-muted-foreground/80 group-hover:text-foreground',
+                  isLocked && "text-muted-foreground/40"
+                )}>
                   {AGENT_DISPLAY_NAMES[agent]}
                 </span>
 
                 {isRunning && (
-                  <span className="text-primary text-[9px] font-bold tracking-wider uppercase">
-                    Running
+                  <span className="inline-flex h-3 items-center rounded-full bg-primary/10 px-1.5 text-[8px] font-bold text-primary uppercase">
+                    Live
                   </span>
                 )}
 
                 {isLocked && (
-                  <span className="text-[9px] font-bold tracking-wider text-amber-500/70 uppercase">
-                    Pro
-                  </span>
+                  <Lock size={10} className="text-muted-foreground/30" />
                 )}
               </div>
 
-              <span className="text-muted-foreground text-[11px]">
+              <p className={cn(
+                "mt-0.5 text-[10px] leading-tight transition-colors",
+                status === 'processing' ? "text-primary/70" : "text-muted-foreground/60",
+                isLocked && "text-muted-foreground/30"
+              )}>
                 {isLocked
-                  ? 'Upgrade plan to unlock'
+                  ? 'Premium Agent'
                   : status === 'processing'
-                    ? 'AI is working on this step'
+                    ? 'Processing now...'
                     : status === 'completed'
-                      ? 'Completed successfully'
+                      ? 'Done'
                       : status === 'failed'
-                        ? isOptional ? 'Skipped (Issue detected)' : 'Critical failure'
-                        : 'Queued'}
-              </span>
+                        ? isOptional ? 'Skipped' : 'Error'
+                        : 'Pending'}
+              </p>
             </div>
           </motion.div>
         );
       })}
 
-      {/* Footer hint */}
-      <div className="space-y-3 px-1 pt-2">
+      {/* Footer / Info */}
+      <div className="mt-6 space-y-3 pt-2">
         {userPlan !== Plan.PREMIUM && (
           <Link
             href="/#pricing"
-            className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 flex w-full items-center gap-2 rounded-lg border p-2 text-[10px] font-bold tracking-wider uppercase transition-colors"
+            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-zinc-900/50 border border-white/10 p-2 text-[9px] font-bold tracking-wider text-zinc-300 uppercase transition-all hover:border-white/20 hover:bg-white/5 hover:text-white"
           >
-            <Sparkles size={12} />
-            Unlock full potential
+            <Sparkles size={10} />
+            Upgrade to Pro
           </Link>
         )}
-        <p className="text-muted-foreground text-[10px]">
-          Pipeline is automatically orchestrated by AI.
-        </p>
       </div>
     </div>
   );

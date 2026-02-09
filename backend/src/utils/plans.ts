@@ -30,6 +30,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     maxProjects: 3,
     maxProjectsPerMonth: 3,
     allowedAgents: [
+      'repository_analyzer',
       'requirement_analyzer',
       'system_design',
       'tech_stack',
@@ -48,6 +49,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     maxProjects: 50,
     maxProjectsPerMonth: 50,
     allowedAgents: [
+      'repository_analyzer',
       'requirement_analyzer',
       'system_design',
       'tech_stack',
@@ -69,6 +71,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     maxProjects: -1, // Unlimited
     maxProjectsPerMonth: -1,
     allowedAgents: [
+      'repository_analyzer',
       'requirement_analyzer',
       'system_design',
       'tech_stack',

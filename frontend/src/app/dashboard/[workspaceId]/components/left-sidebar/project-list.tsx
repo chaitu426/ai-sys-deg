@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { ProjectSummary } from '../../types/design';
 import { UsageIndicator } from '@/components/subscription';
 import { PLAN_LIMITS, Plan } from '@/lib/plans';
@@ -56,10 +57,16 @@ export function ProjectList() {
 
   const handleNewProject = () => {
     if (projects.length >= userPlanLimits.maxProjects && userPlanLimits.maxProjects !== -1) {
+      toast.error('Project limit reached', {
+        description: 'Upgrade your plan to create more architectural designs.',
+      });
       return;
     }
     const newId = crypto.randomUUID();
     router.push(`/dashboard/${newId}?new=true`);
+    toast.success('New workspace initialized', {
+      description: 'Describe your system to start the architecture pipeline.',
+    });
   };
 
   const isLimitReached =
@@ -82,7 +89,7 @@ export function ProjectList() {
               {user?.name?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="bg-background absolute -right-1 -bottom-1 flex h-3.5 w-3.5 items-center justify-center rounded-full">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              <div className="h-2 w-2 animate-pulse rounded-full bg-white" />
             </div>
           </div>
 
@@ -160,14 +167,14 @@ export function ProjectList() {
               className={cn(
                 'group relative flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-xs transition-all',
                 projectId === p.id
-                  ? 'border-primary/10 bg-primary/10 text-primary font-medium'
+                  ? 'border-white/10 bg-white/10 text-white font-medium'
                   : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
               )}
             >
               {projectId === p.id && (
                 <motion.div
                   layoutId="active-project-indicator"
-                  className="bg-primary absolute top-1/2 left-0 h-6 w-1 -translate-y-1/2 rounded-r-full shadow-[0_0_12px_var(--primary)]"
+                  className="bg-white absolute top-1/2 left-0 h-6 w-1 -translate-y-1/2 rounded-r-full shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                 />
               )}
 
@@ -175,7 +182,7 @@ export function ProjectList() {
                 className={cn(
                   'h-4 w-4 transition-colors',
                   projectId === p.id
-                    ? 'text-primary'
+                    ? 'text-white'
                     : 'text-muted-foreground/50 group-hover:text-muted-foreground'
                 )}
               />

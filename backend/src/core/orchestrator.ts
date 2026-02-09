@@ -18,6 +18,7 @@ const logger = getLogger();
  * Core execution order (hard dependencies)
  */
 const CORE_AGENTS: AgentType[] = [
+  AGENTS.REPOSITORY_ANALYZER,
   AGENTS.REQUIREMENT_ANALYZER,
   AGENTS.SYSTEM_DESIGN,
   AGENTS.TECH_STACK,
@@ -61,13 +62,15 @@ export class Orchestrator {
   async startDesignWorkflow(
     projectId: string,
     prompt: string,
-    userPlan: string = 'FREE'
+    userPlan: string = 'FREE',
+    githubRepoFullName?: string
   ): Promise<string> {
     logger.info('Starting workflow', { projectId, userPlan });
 
     const designVersion = await projectRepository.createDesignVersion({
       projectId,
       prompt,
+      githubRepoFullName,
     });
 
     await projectRepository.updateDesignVersionStatus(designVersion.id, 'processing');
@@ -81,7 +84,12 @@ export class Orchestrator {
     // Store user plan in context for agent filtering
     this.userPlanCache.set(designVersion.id, userPlan);
 
-    await this.enqueueAgentIfNeeded(designVersion.id, AGENTS.REQUIREMENT_ANALYZER);
+    // Start from Repository Analyzer if repo is provided, otherwise Requirement Analyzer
+    if (githubRepoFullName) {
+      await this.enqueueAgentIfNeeded(designVersion.id, AGENTS.REPOSITORY_ANALYZER);
+    } else {
+      await this.enqueueAgentIfNeeded(designVersion.id, AGENTS.REQUIREMENT_ANALYZER);
+    }
 
     return designVersion.id;
   }
@@ -370,6 +378,11 @@ export class Orchestrator {
     const designVersion = await projectRepository.getDesignVersionById(designVersionId);
     if (!designVersion) return null;
 
+    // Fetch project and plan for context
+    const project = await projectRepository.getProjectById(designVersion.projectId);
+    const userPlan = await this.resolveEffectivePlan(designVersionId);
+    const projectTitle = project?.title || 'System Design';
+
     const previousOutputs: AgentContext['previousOutputs'] = {};
 
     for (const output of designVersion.agentOutputs) {
@@ -381,6 +394,9 @@ export class Orchestrator {
     return {
       designVersionId,
       projectId: (designVersion as any).projectId,
+      projectTitle,
+      userPlan,
+      githubRepoFullName: designVersion.githubRepoFullName || undefined,
       prompt: designVersion.prompt,
       sharedMemory: (designVersion.sharedMemory as unknown as SharedMemory) || {
         decisions: [],
@@ -405,6 +421,7 @@ export class Orchestrator {
 
     // Strict Sequential Order
     const SEQUENTIAL_AGENTS: AgentType[] = [
+      AGENTS.REPOSITORY_ANALYZER,
       AGENTS.REQUIREMENT_ANALYZER,
       AGENTS.SYSTEM_DESIGN,
       AGENTS.TECH_STACK,
@@ -419,6 +436,11 @@ export class Orchestrator {
     for (const agent of SEQUENTIAL_AGENTS) {
       // 1. If agent is completed, move to next
       if (context.agentStatuses[agent] === 'completed') {
+        continue;
+      }
+
+      // Special Case: Skip Repository Analyzer if no repo is provided
+      if (agent === AGENTS.REPOSITORY_ANALYZER && !context.githubRepoFullName) {
         continue;
       }
 
@@ -553,7 +575,8 @@ export class Orchestrator {
 
   private assertDependencies(agentType: AgentType, context: Omit<AgentContext, 'agentType'>) {
     // Base requirement for all non-foundation agents
-    if (agentType !== AGENTS.REQUIREMENT_ANALYZER) {
+    // Foundation agents are REPOSITORY_ANALYZER and REQUIREMENT_ANALYZER
+    if (agentType !== AGENTS.REQUIREMENT_ANALYZER && agentType !== AGENTS.REPOSITORY_ANALYZER) {
       if (!context.previousOutputs.requirementAnalyzer) {
         throw new Error(`${agentType} requires requirement_analyzer output`);
       }
@@ -602,9 +625,45 @@ export class Orchestrator {
       [AGENTS.COST_ESTIMATION]: 'costEstimation',
       [AGENTS.DEPLOYMENT_STRATEGY]: 'deploymentStrategy',
       [AGENTS.FAILURE_MODE_ANALYZER]: 'failureModeAnalyzer',
+      [AGENTS.REPOSITORY_ANALYZER]: 'repositoryAnalyzer', // Added based on instruction
     };
     return map[agentType];
   }
+
+  // Assuming a method like this exists in the full context for agent instantiation
+  // private async createAgentInstance(designVersionId: string, agentType: AgentType): Promise<Agent> {
+  //   switch (agentType) {
+  //     case AGENTS.REQUIREMENT_ANALYZER:
+  //       const { RequirementAnalyzer } = await import('../agents/requirement-analyzer');
+  //       return new RequirementAnalyzer(designVersionId);
+  //     case AGENTS.SYSTEM_DESIGN:
+  //       const { SystemDesign } = await import('../agents/system-design');
+  //       return new SystemDesign(designVersionId);
+  //     case AGENTS.TECH_STACK:
+  //       const { TechStack } = await import('../agents/tech-stack');
+  //       return new TechStack(designVersionId);
+  //     case AGENTS.API_DESIGN:
+  //       const { ApiDesign } = await import('../agents/api-design');
+  //       return new ApiDesign(designVersionId);
+  //     case AGENTS.DEPLOYMENT_STRATEGY:
+  //       const { DeploymentStrategy } = await import('../agents/deployment-strategy');
+  //       return new DeploymentStrategy(designVersionId);
+  //     case AGENTS.COST_ESTIMATION:
+  //       const { CostEstimation } = await import('../agents/cost-estimation');
+  //       return new CostEstimation(designVersionId);
+  //     case AGENTS.FAILURE_MODE_ANALYZER:
+  //       const { FailureModeAnalyzer } = await import('../agents/failure-mode-analyzer');
+  //       return new FailureModeAnalyzer(designVersionId);
+  //     case AGENTS.REPOSITORY_ANALYZER:
+  //       const { RepositoryAnalyzer } = await import('../agents/repository-analyzer');
+  //       return new RepositoryAnalyzer(designVersionId);
+  //     case AGENTS.DIAGRAM_GENERATOR:
+  //       const { DiagramGenerator } = await import('../agents/diagram-generator');
+  //       return new DiagramGenerator(designVersionId);
+  //     default:
+  //       throw new Error(`Unknown agent type: ${agentType}`);
+  //   }
+  // }
 
   private async completeWorkflow(designVersionId: string): Promise<void> {
     await projectRepository.updateDesignVersionStatus(designVersionId, 'completed');

@@ -83,6 +83,11 @@ TOOL INSTRUCTIONS:
 - Do NOT fabricate unrealistic discounts or promotional pricing.
 - If you use tools to find information, you MUST include the sources in the "researchSources" field.
 
+REPOSITORY AWARENESS (CONDITIONAL):
+- If "repositoryAnalyzer" results are provided, you are in "Brownfield" mode.
+- Consider existing infrastructure and licenses identified in the repository to avoid double-counting or suggesting redundant paid services.
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode.
+
 COST ESTIMATION GUIDELINES:
 - Base estimates on publicly known pricing models from major cloud providers (AWS, GCP, Azure).
 - Assume on-demand pricing unless otherwise specified.

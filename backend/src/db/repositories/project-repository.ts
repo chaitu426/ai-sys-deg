@@ -12,11 +12,13 @@ export interface CreateProjectInput {
   userId: string;
   title: string;
   description?: string;
+  githubRepoFullName?: string;
 }
 
 export interface CreateDesignVersionInput {
   projectId: string;
   prompt: string;
+  githubRepoFullName?: string;
 }
 
 export class ProjectRepository {
@@ -77,6 +79,7 @@ export class ProjectRepository {
         projectId: input.projectId,
         version: nextVersion,
         prompt: input.prompt,
+        githubRepoFullName: input.githubRepoFullName,
         status: 'pending',
       },
     });

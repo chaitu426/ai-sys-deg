@@ -32,6 +32,10 @@ model User {
   customerId         String?
   currentPeriodEnd   DateTime?
 
+  // GitHub OAuth
+  githubId           String?  @unique
+  githubAccessToken  String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -81,11 +85,13 @@ model Project {
   userId      String
   title       String
   description String?
+  githubRepoFullName String? 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   designVersions DesignVersion[]
+  whiteboards    Whiteboard[]
   tokenUsage     TokenUsage[]
 
   @@map("projects")
@@ -98,6 +104,7 @@ model DesignVersion {
   prompt      String   // Original or updated prompt
   status      String   @default("pending") // 'pending', 'processing', 'completed', 'failed'
   sharedMemory Json?   // Neural Board: Shared blackboard for all agents'
+  githubRepoFullName String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   completedAt DateTime?
@@ -145,6 +152,20 @@ model AuditLog {
   @@index([userId])
   @@index([designVersionId])
   @@map("audit_logs")
+}
+
+model Whiteboard {
+  id        String   @id @default(cuid())
+  projectId String
+  type      String   // 'architecture', 'flow', 'scaling', etc.
+  data      Json     // ReactFlow state (nodes, edges, viewport)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, type])
+  @@map("whiteboards")
 }
 
 model TokenUsage {

@@ -15,6 +15,7 @@ export const AGENTS = {
   COST_ESTIMATION: 'cost_estimation',
   DEPLOYMENT_STRATEGY: 'deployment_strategy',
   FAILURE_MODE_ANALYZER: 'failure_mode_analyzer',
+  REPOSITORY_ANALYZER: 'repository_analyzer',
 } as const;
 
 export type AgentType = typeof AGENTS[keyof typeof AGENTS];
@@ -51,11 +52,13 @@ export interface SystemDesignOutput {
     name: string;
     description: string;
     responsibilities: string[];
+    justification?: string;
   }>;
   serviceBoundaries: Array<{
     service: string;
     description: string;
     responsibilities: string[];
+    justification?: string;
   }>;
   dataFlow: {
     description: string;
@@ -143,14 +146,15 @@ export interface APIDesignOutput {
     description: string;
     requestBody?: {
       schema: string;
-      example: unknown;
+      example: any;
     };
     responseBody?: {
       schema: string;
-      example: unknown;
+      example: any;
     };
-    authentication: string;
-    rateLimiting?: string;
+    authentication: 'required' | 'optional' | 'none';
+    rateLimiting: string;
+    justification?: string;
   }>;
   apiVersioning: string;
   errorHandling: string;
@@ -258,13 +262,38 @@ export interface SharedMemory {
 }
 
 /**
+ * Repository Analyzer output contract
+ */
+export interface RepositoryAnalyzerOutput {
+  techStack: {
+    frontend?: string[];
+    backend?: string[];
+    database?: string[];
+    infrastructure?: string[];
+  };
+  mainComponents: string[];
+  purpose: string;
+  architecturalPatterns?: string[];
+  apis?: {
+    type: string;
+    endpoints: string[];
+  };
+  logicalApproach?: string;
+}
+
+/**
  * Context passed between agents
  */
 export interface AgentContext {
-  designVersionId: string;
   projectId: string;
+  designVersionId: string;
+  projectTitle: string;
   prompt: string;
+  userPlan: string;
+  githubRepoFullName?: string;
+  sharedMemory: SharedMemory;
   previousOutputs: {
+    repositoryAnalyzer?: RepositoryAnalyzerOutput;
     requirementAnalyzer?: RequirementAnalyzerOutput;
     systemDesign?: SystemDesignOutput;
     techStack?: TechStackOutput;
@@ -272,10 +301,8 @@ export interface AgentContext {
     apiDesign?: APIDesignOutput;
     costEstimation?: CostEstimationOutput;
     deploymentStrategy?: DeploymentStrategyOutput;
-
     failureModeAnalyzer?: FailureModeAnalyzerOutput;
   };
-  sharedMemory: SharedMemory; // The Neural Board
   allowedTools?: string[];
   agentType: AgentType;
   agentStatuses: Record<string, 'pending' | 'processing' | 'completed' | 'failed'>;

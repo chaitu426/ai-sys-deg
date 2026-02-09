@@ -17,60 +17,70 @@ export function RightSidebar({ workspaceId }: RightSidebarProps) {
   const [controlsOpen, setControlsOpen] = useState(false);
 
   return (
-    <aside className="border-border bg-card flex h-full flex-col border-l font-sans">
+    <aside className="border-border bg-card/30 flex h-full flex-col border-l font-sans backdrop-blur-sm">
       {/* Header */}
-      <div className="border-border bg-muted/10 shrink-0 border-b px-4 py-3">
-        <div className="text-foreground flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
-          <CircuitBoard size={15} />
-          Orchestration
+      <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-4 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/10 text-white">
+            <CircuitBoard size={14} />
+          </div>
+          <h2 className="text-xs font-bold tracking-widest text-foreground uppercase">
+            Orchestration
+          </h2>
         </div>
       </div>
 
       {/* Scrollable Content */}
-      <div className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent flex-1 overflow-y-auto">
-        {/* Pipeline Section */}
-        <section className="border-border/40 border-b px-4 py-4">
-          <SectionToggle
-            label="Execution Stages"
-            icon={<Layers size={14} />}
-            open={pipelineOpen}
-            onToggle={() => setPipelineOpen((v) => !v)}
-          />
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+        <div className="divide-y divide-border/40">
+          {/* Pipeline Section */}
+          <section className="px-4 py-5">
+            <SectionToggle
+              label="Execution Stages"
+              icon={<Layers size={14} className="text-white" />}
+              open={pipelineOpen}
+              onToggle={() => setPipelineOpen((v) => !v)}
+            />
 
-          {pipelineOpen && (
-            <div className="animate-in slide-in-from-top-2 mt-3 duration-300">
-              <AgentControlPanel />
-            </div>
-          )}
-        </section>
+            {pipelineOpen && (
+              <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                <AgentControlPanel />
+              </div>
+            )}
+          </section>
 
-        {/* Vibe Coder Section */}
-        <VibeCoderSection
-          workspaceId={workspaceId}
-          open={vibeOpen}
-          onToggle={() => setVibeOpen((v) => !v)}
-        />
+          {/* Vibe Coder Section */}
+          <div className="px-4 py-5">
+            <VibeCoderSection
+              workspaceId={workspaceId}
+              open={vibeOpen}
+              onToggle={() => setVibeOpen((v) => !v)}
+            />
+          </div>
+        </div>
 
-        {/* Spacer so content doesn't hide behind sticky controls */}
-        <div className="h-32" />
+        {/* Spacer */}
+        <div className="h-24" />
       </div>
 
       {/* Sticky Controls */}
-      <div className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky bottom-0 border-t backdrop-blur">
-        <div className="px-4 py-3">
-          <SectionToggle
-            label="Controls"
-            icon={<Sliders size={14} />}
-            open={controlsOpen}
-            onToggle={() => setControlsOpen((v) => !v)}
-          />
+      <div className="sticky bottom-0 border-t border-border/50 bg-background/80 px-4 py-3 backdrop-blur-md">
+        <button
+          onClick={() => setControlsOpen(!controlsOpen)}
+          className="flex w-full items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase transition-all hover:bg-muted/50 hover:text-foreground"
+        >
+          <div className="flex items-center gap-2">
+            <Sliders size={12} />
+            Quick Controls
+          </div>
+          {controlsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        </button>
 
-          {controlsOpen && (
-            <div className="animate-in slide-in-from-top-2 mt-3 duration-300">
-              <PartialRestart workspaceId={workspaceId} />
-            </div>
-          )}
-        </div>
+        {controlsOpen && (
+          <div className="mt-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <PartialRestart workspaceId={workspaceId} />
+          </div>
+        )}
       </div>
     </aside>
   );

@@ -26,6 +26,7 @@ const createDesignSchema = z.object({
     .string()
     .min(1, 'Prompt is required')
     .max(10000, 'Prompt cannot exceed 10,000 characters'),
+  githubRepoFullName: z.string().optional(),
 });
 
 const updateDesignSchema = z.object({
@@ -43,11 +44,11 @@ const updateDesignSchema = z.object({
  * Create a new design project
  */
 async function createDesign(
-  request: FastifyRequest<{ Body: { prompt: string } }>,
+  request: FastifyRequest<{ Body: { prompt: string; githubRepoFullName?: string } }>,
   reply: FastifyReply
 ) {
   try {
-    const { prompt } = createDesignSchema.parse(request.body);
+    const { prompt, githubRepoFullName } = createDesignSchema.parse(request.body);
 
     // Sanitize user input to prevent injection attacks
     const sanitizedPrompt = sanitizePrompt(prompt);
@@ -98,18 +99,19 @@ async function createDesign(
       });
     }
 
-    // Create project with sanitized prompt
+    // Create project    // 1. Create project
     const project = await projectRepository.createProject({
       userId,
-      title: `Design: ${sanitizedPrompt.substring(0, 100)}`,
-      description: sanitizedPrompt,
+      title: sanitizedPrompt.substring(0, 50) + '...',
+      githubRepoFullName,
     });
 
-    // Start workflow (orchestrator will filter agents by plan)
+    // 2. Start orchestration
     const designVersionId = await getOrchestrator().startDesignWorkflow(
       project.id,
       sanitizedPrompt,
-      userPlan as any // Pass user plan to orchestrator
+      userPlan,
+      githubRepoFullName
     );
 
     // Audit Log

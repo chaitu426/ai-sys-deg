@@ -12,6 +12,10 @@ interface User {
   customerId?: string;
   currentPeriodEnd?: string | Date;
   isVerified?: boolean;
+  githubId?: string;
+  githubAccessToken?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthResponse {

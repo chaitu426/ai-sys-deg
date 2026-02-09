@@ -26,41 +26,41 @@ export function ToolActivity() {
             case 'started':
                 return {
                     icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
-                    bgColor: 'bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20',
-                    borderColor: 'border-violet-500/40',
-                    textColor: 'text-violet-300',
-                    iconColor: 'text-violet-400',
-                    pulseColor: 'bg-violet-500',
+                    bgColor: 'bg-zinc-100/10',
+                    borderColor: 'border-white/20',
+                    textColor: 'text-white',
+                    iconColor: 'text-white',
+                    pulseColor: 'bg-white',
                     label: 'Running'
                 };
             case 'completed':
                 return {
                     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-                    bgColor: 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20',
-                    borderColor: 'border-emerald-500/40',
-                    textColor: 'text-emerald-300',
-                    iconColor: 'text-emerald-400',
-                    pulseColor: 'bg-emerald-500',
+                    bgColor: 'bg-zinc-100/5',
+                    borderColor: 'border-white/10',
+                    textColor: 'text-zinc-300',
+                    iconColor: 'text-white',
+                    pulseColor: 'bg-zinc-500',
                     label: 'Complete'
                 };
             case 'failed':
                 return {
                     icon: <AlertCircle className="h-3.5 w-3.5" />,
-                    bgColor: 'bg-gradient-to-r from-rose-500/20 to-red-500/20',
-                    borderColor: 'border-rose-500/40',
-                    textColor: 'text-rose-300',
-                    iconColor: 'text-rose-400',
-                    pulseColor: 'bg-rose-500',
+                    bgColor: 'bg-zinc-900/50',
+                    borderColor: 'border-white/10',
+                    textColor: 'text-zinc-400',
+                    iconColor: 'text-zinc-400',
+                    pulseColor: 'bg-zinc-800',
                     label: 'Failed'
                 };
             default:
                 return {
                     icon: <Wrench className="h-3.5 w-3.5" />,
-                    bgColor: 'bg-zinc-800/50',
-                    borderColor: 'border-zinc-700',
-                    textColor: 'text-zinc-300',
-                    iconColor: 'text-zinc-400',
-                    pulseColor: 'bg-zinc-500',
+                    bgColor: 'bg-zinc-900/0',
+                    borderColor: 'border-transparent',
+                    textColor: 'text-zinc-500',
+                    iconColor: 'text-zinc-600',
+                    pulseColor: 'bg-zinc-800',
                     label: ''
                 };
         }
@@ -108,7 +108,7 @@ export function ToolActivity() {
                         </span>
                         {status === 'started' && (
                             <motion.span
-                                className="text-[10px] text-violet-400/80"
+                                className="text-[10px] text-zinc-500"
                                 animate={{ opacity: [0.5, 1, 0.5] }}
                                 transition={{ duration: 1.5, repeat: Infinity }}
                             >
@@ -127,9 +127,9 @@ export function ToolActivity() {
                 {/* Status Badge */}
                 <div className={`
                     ml-2 rounded-full px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider
-                    ${status === 'started' ? 'bg-violet-500/30 text-violet-300' : ''}
-                    ${status === 'completed' ? 'bg-emerald-500/30 text-emerald-300' : ''}
-                    ${status === 'failed' ? 'bg-rose-500/30 text-rose-300' : ''}
+                    ${status === 'started' ? 'bg-white/10 text-white' : ''}
+                    ${status === 'completed' ? 'bg-zinc-800 text-zinc-400' : ''}
+                    ${status === 'failed' ? 'bg-zinc-900 text-zinc-500 border border-zinc-800' : ''}
                 `}>
                     {config.label}
                 </div>

@@ -55,6 +55,9 @@ export const useDesignSSE = (projectId: string) => {
       if (data.output) {
         // Map agent type to artifact key
         switch (data.agentType) {
+          case 'repository_analyzer':
+            // No specific artifact for repo analysis yet, but we track it
+            break;
           case 'requirement_analyzer':
             updateArtifact('requirements', data.output);
             break;

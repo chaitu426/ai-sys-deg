@@ -30,9 +30,9 @@ export function AgentOutputStream() {
       <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-rose-500/50" />
-            <div className="h-2 w-2 rounded-full bg-amber-500/50" />
-            <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
+            <div className="h-2 w-2 rounded-full bg-white/20" />
+            <div className="h-2 w-2 rounded-full bg-white/20" />
+            <div className="h-2 w-2 rounded-full bg-white/20" />
           </div>
           <div className="h-4 w-px bg-white/10 mx-1" />
           <div className="flex items-center gap-2 text-white/50">
@@ -46,10 +46,10 @@ export function AgentOutputStream() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 group">
             <div className="relative h-2 w-2">
-              <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
-              <div className="relative rounded-full h-2 w-2 bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+              <div className="absolute inset-0 rounded-full bg-white animate-ping opacity-75" />
+              <div className="relative rounded-full h-2 w-2 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
             </div>
-            <span className="text-[10px] font-bold text-primary tracking-widest uppercase">
+            <span className="text-[10px] font-bold text-white tracking-widest uppercase">
               Active: {AGENT_DISPLAY_NAMES[currentAgent]}
             </span>
           </div>
@@ -81,13 +81,13 @@ export function AgentOutputStream() {
               </span>
               <span className={cn(
                 "flex-1 break-all",
-                log.type === 'info' && "text-white/70",
-                log.type === 'tool' && "text-amber-400 font-bold",
-                log.type === 'success' && "text-emerald-400",
-                log.type === 'error' && "text-rose-400 font-black animate-pulse"
+                log.type === 'info' && "text-zinc-400",
+                log.type === 'tool' && "text-white font-bold",
+                log.type === 'success' && "text-white font-medium",
+                log.type === 'error' && "text-zinc-500 font-black animate-pulse"
               )}>
-                {log.type === 'tool' && <Zap size={10} className="inline mr-2 mb-0.5" />}
-                {log.type === 'success' && <ShieldCheck size={10} className="inline mr-2 mb-0.5" />}
+                {log.type === 'tool' && <Zap size={10} className="inline mr-2 mb-0.5 text-white" />}
+                {log.type === 'success' && <ShieldCheck size={10} className="inline mr-2 mb-0.5 text-white" />}
                 {log.message}
               </span>
             </motion.div>
@@ -96,8 +96,8 @@ export function AgentOutputStream() {
 
         {/* Floating Cursor/Active indicator */}
         <div className="flex items-center gap-2 mt-4">
-          <div className="h-4 w-2 bg-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-          <span className="text-primary/40 text-[9px] uppercase tracking-tighter">Awaiting system instructions...</span>
+          <div className="h-4 w-2 bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+          <span className="text-zinc-500 text-[9px] uppercase tracking-tighter">Awaiting system instructions...</span>
         </div>
       </div>
 

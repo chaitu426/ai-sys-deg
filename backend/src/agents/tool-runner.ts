@@ -62,10 +62,31 @@ export async function runAgentWithTools<T>(
   }
 
   // Build initial message history
+  let contextContent = `---\nUser Prompt:\n${context.prompt}`;
+
+  // Add context from previous agents if available
+  if (context.previousOutputs && Object.keys(context.previousOutputs).length > 0) {
+    let previousOutputsStr = JSON.stringify(context.previousOutputs, null, 2);
+
+    // Context Safety: Trim if it's too large for models with small windows (e.g. Groq 8k models)
+    // 30,000 chars is roughly 7,500 tokens. 
+    if (previousOutputsStr.length > 30000) {
+      logger.warn('Previous outputs too large, trimming for performance', {
+        designVersionId: context.designVersionId,
+        originalLength: previousOutputsStr.length
+      });
+      // Simple strategy: take the last 30k characters, or we could be smarter and 
+      // focus on critical agents like RequirementAnalyzer/SystemDesign.
+      previousOutputsStr = previousOutputsStr.substring(0, 30000) + '\n... (truncated for context limit)';
+    }
+
+    contextContent += `\n\n---\nPrevious Analysis Results:\n${previousOutputsStr}`;
+  }
+
   const messages: GeminiMessage[] = [
     {
       role: 'user',
-      content: `---\nUser Prompt:\n${context.prompt}`,
+      content: contextContent,
     },
   ];
 
@@ -241,7 +262,7 @@ async function executeToolCall(
 
     // Execute with timeout
     const result = await Promise.race([
-      tool.execute(toolCall.arguments),
+      tool.execute(toolCall.arguments, context),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Tool execution timeout')), TOOL_EXECUTION_TIMEOUT_MS)
       ),

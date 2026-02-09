@@ -1,4 +1,5 @@
 export type AgentType =
+  | 'repository_analyzer'
   | 'requirement_analyzer'
   | 'system_design'
   | 'tech_stack'
@@ -19,6 +20,7 @@ export interface AgentOutput {
 }
 
 export const AGENT_DISPLAY_NAMES: Record<AgentType, string> = {
+  repository_analyzer: 'Repository Analyzer',
   requirement_analyzer: 'Requirement Analyzer',
   system_design: 'System Design',
   tech_stack: 'Tech Stack',
@@ -27,10 +29,10 @@ export const AGENT_DISPLAY_NAMES: Record<AgentType, string> = {
   cost_estimation: 'Cost Estimation',
   deployment_strategy: 'Deployment Strategy',
   failure_mode_analyzer: 'Failure Mode Analyzer',
-
 };
 
 export const ORDERED_AGENTS: AgentType[] = [
+  'repository_analyzer',
   'requirement_analyzer',
   'system_design',
   'tech_stack',

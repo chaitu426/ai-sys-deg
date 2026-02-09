@@ -2,6 +2,7 @@
  * Base interface for all tools
  */
 import { z } from 'zod';
+import { AgentContext } from '../../core/contracts';
 
 /**
  * Base interface for all tools
@@ -45,7 +46,7 @@ export interface Tool {
   /**
    * Execute the tool with given arguments
    */
-  execute(args: any): Promise<any>;
+  execute(args: any, context?: AgentContext): Promise<any>;
 
   /**
    * Validate arguments before execution (optional but recommended)

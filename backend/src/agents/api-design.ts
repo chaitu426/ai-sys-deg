@@ -60,7 +60,8 @@ JSON SCHEMA (STRICT):
         "example": {}
       },
       "authentication": "required|optional|none",
-      "rateLimiting": "string"
+      "rateLimiting": "string",
+      "justification": "Required if this endpoint modifies or deviates from the existing repository patterns or is a new addition."
     }
   ],
   "apiVersioning": "string",
@@ -70,6 +71,13 @@ JSON SCHEMA (STRICT):
     { "title": "Stripe API Design Guidelines", "url": "https://stripe.com/docs/api" }
   ]
 }
+
+REPOSITORY AWARENESS (CONDITIONAL):
+- If "repositoryAnalyzer" results are provided, you are in "Brownfield" mode.
+- Respect and follow the existing API patterns, naming conventions (e.g., camelCase vs snake_case), and versioning schemes found in the repository.
+- Use the user prompt with EQUAL WEIGHT to expand or modify the API.
+- If you propose an endpoint that modifies an existing one or adds significant new functionality, you MUST provide a "justification".
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode.
 
 TOOL INSTRUCTIONS:
 - You MUST use tools if needed to research best practices or specific API standards (e.g. Health level 7 for healthcare, or specific cloud API patterns).
@@ -100,6 +108,16 @@ ${design.serviceBoundaries.map((s) => `- ${s.service}: ${s.description}`).join('
 Data Flow:
 ${design.dataFlow.description}
 `;
+
+    if (context.previousOutputs.repositoryAnalyzer) {
+      const repo = context.previousOutputs.repositoryAnalyzer as any;
+      prompt += `
+REPOSITORY CONTEXT (Existing API Info):
+Tech Stack: ${repo.techStack.language}, ${repo.techStack.framework}
+Existing APIs/Endpoints: ${JSON.stringify(repo.apis)}
+Logical Approach: ${repo.logicalApproach}
+`;
+    }
 
     if (techStack) {
       const backendFramework = techStack.backend?.framework ?? 'unspecified';

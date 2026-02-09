@@ -10,6 +10,8 @@ import { registerSSERoutes } from './routes/sse';
 import { registerApprovalRoutes } from './routes/approval';
 import { registerPaymentRoutes } from './routes/payments';
 import { registerInternalRoutes } from './routes/internal';
+import { registerWhiteboardRoutes } from './routes/whiteboard';
+import { registerGitHubRoutes } from './routes/github-auth';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Parsing is tricky with webhooks. Dodo docs say "fastify.addContentTypeParser".
@@ -24,4 +26,6 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await registerApprovalRoutes(fastify);
   await registerPaymentRoutes(fastify);
   await registerInternalRoutes(fastify);
+  await registerWhiteboardRoutes(fastify);
+  await registerGitHubRoutes(fastify);
 }

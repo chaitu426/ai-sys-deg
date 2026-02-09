@@ -22,7 +22,7 @@ export function Hero() {
         colorLightVar="--color-neutral-400"
         glowColorLightVar="--color-neutral-500"
         colorDarkVar="--color-neutral-500"
-        glowColorDarkVar="--color-sky-800"
+        glowColorDarkVar="--color-neutral-200"
         backgroundOpacity={0}
         speedMin={0.3}
         speedMax={1.6}
@@ -36,7 +36,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/5 px-4 py-1 text-sm text-sky-700 backdrop-blur dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-300"
+          className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1 text-sm text-zinc-300 backdrop-blur"
         >
           {isAuthenticated ? `Welcome back, ${userName}` : 'The Future of AI System Architecture'}
         </motion.div>
@@ -86,8 +86,8 @@ export function Hero() {
         >
           {isAuthenticated ? (
             <Link href="/dashboard">
-              <button className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-black px-8 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-500/20 dark:bg-white dark:text-black">
-                <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+              <button className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-white px-8 py-3 text-sm font-bold text-black transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-white/20">
+                <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-black/5 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
                 Enter Workspace
                 <ArrowRight className="h-4 w-4" />
               </button>
@@ -95,8 +95,8 @@ export function Hero() {
           ) : (
             <>
               <Link href="/signup">
-                <button className="group relative overflow-hidden rounded-xl bg-black px-8 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-500/20 dark:bg-white dark:text-black">
-                  <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+                <button className="group relative overflow-hidden rounded-xl bg-white px-8 py-3 text-sm font-bold text-black transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-white/20">
+                  <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-black/5 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
                   Start Designing Free
                 </button>
               </Link>

@@ -1,6 +1,6 @@
 /**
- * Agent executor dispatcher
- * Routes agent execution to appropriate implementation
+ * Agent executor dispatchar
+ * Routes agent execution to apropriate implementation
  */
 
 import { AgentType, AgentContext, AgentExecutionResult, AGENTS } from '../core/contracts';
@@ -12,6 +12,7 @@ import { apiDesignAgent } from './api-design';
 import { costEstimationAgent } from './cost-estimation';
 import { deploymentStrategyAgent } from './deployment-strategy';
 import { failureModeAnalyzerAgent } from './failure-mode-analyzer';
+import { repositoryAnalyzerAgent } from './repository-analyzer';
 import { getLogger } from '../utils/logger';
 import { toolRegistry } from '../tools/registry';
 
@@ -69,6 +70,10 @@ export async function executeAgent(
 
       case 'failure_mode_analyzer':
         output = await failureModeAnalyzerAgent.execute(context);
+        break;
+
+      case AGENTS.REPOSITORY_ANALYZER:
+        output = await repositoryAnalyzerAgent.execute(context);
         break;
 
       default:

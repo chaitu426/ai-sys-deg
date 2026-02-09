@@ -52,7 +52,7 @@ export function NavbarDemo() {
                 </div>
                 <button
                   onClick={() => logout()}
-                  className="p-2 text-neutral-500 transition-colors hover:text-red-500"
+                  className="p-2 text-neutral-500 transition-colors hover:text-white"
                   title="Logout"
                 >
                   <LogOut className="h-4 w-4" />

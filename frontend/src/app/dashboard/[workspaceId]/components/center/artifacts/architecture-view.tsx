@@ -153,7 +153,7 @@ export function ArchitectureView({ data }: { data: SystemDesign }) {
                 <ul className="space-y-1">
                   {data.scalingStrategy.horizontalScaling?.map((s, i) => (
                     <li key={i} className="text-foreground/80 flex gap-2 text-xs">
-                      <Check size={12} className="mt-0.5 text-green-500" /> <SafeRender value={s} />
+                      <Check size={12} className="mt-0.5 text-white" /> <SafeRender value={s} />
                     </li>
                   ))}
                 </ul>
@@ -165,7 +165,7 @@ export function ArchitectureView({ data }: { data: SystemDesign }) {
                 <ul className="space-y-1">
                   {data.scalingStrategy.verticalScaling?.map((s, i) => (
                     <li key={i} className="text-foreground/80 flex gap-2 text-xs">
-                      <Check size={12} className="mt-0.5 text-green-500" /> <SafeRender value={s} />
+                      <Check size={12} className="mt-0.5 text-white" /> <SafeRender value={s} />
                     </li>
                   ))}
                 </ul>
@@ -213,7 +213,7 @@ export function ArchitectureView({ data }: { data: SystemDesign }) {
                 <ul className="space-y-1">
                   {data.faultTolerance.failureModes?.map((s, i) => (
                     <li key={i} className="text-foreground/80 flex gap-2 text-xs">
-                      <AlertOctagon size={12} className="mt-0.5 text-amber-500" /> <SafeRender value={s} />
+                      <AlertOctagon size={12} className="mt-0.5 text-zinc-400" /> <SafeRender value={s} />
                     </li>
                   ))}
                 </ul>
@@ -225,7 +225,7 @@ export function ArchitectureView({ data }: { data: SystemDesign }) {
                 <ul className="space-y-1">
                   {data.faultTolerance.mitigationStrategies?.map((s, i) => (
                     <li key={i} className="text-foreground/80 flex gap-2 text-xs">
-                      <Shield size={12} className="mt-0.5 text-blue-500" /> <SafeRender value={s} />
+                      <Shield size={12} className="mt-0.5 text-white" /> <SafeRender value={s} />
                     </li>
                   ))}
                 </ul>

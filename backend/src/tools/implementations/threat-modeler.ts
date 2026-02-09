@@ -1,5 +1,6 @@
 import { Tool } from '../core/tool';
 import { z } from 'zod';
+import { AgentContext } from '../../core/contracts';
 
 export class SecurityThreatModeler implements Tool {
     name = 'threat_modeler';
@@ -31,7 +32,7 @@ export class SecurityThreatModeler implements Tool {
         };
     }
 
-    async execute(args: any) {
+    async execute(args: any, context?: AgentContext) {
         const input = this.schema.parse(args);
         const threats: Array<{
             category: string; // Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege

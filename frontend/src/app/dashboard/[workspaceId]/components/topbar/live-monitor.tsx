@@ -25,16 +25,8 @@ export function LiveMonitor() {
         <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative hidden h-8 w-64 overflow-hidden rounded-md border border-white/10 bg-black/80 font-mono text-[9px] shadow-2xl lg:flex"
+            className="relative hidden h-8 w-66 overflow-hidden rounded-md border font-mono text-[9px] shadow-2xl lg:flex"
         >
-
-            {/* Left Sidebar indicator */}
-            <div className="flex w-8 flex-col items-center justify-center border-r border-white/10 bg-white/5">
-                <div className="relative">
-                    <Activity size={12} className="text-primary animate-pulse" />
-                    <div className="absolute inset-0 bg-primary/20 blur-sm rounded-full" />
-                </div>
-            </div>
 
             {/* Main Content */}
             <div className="flex flex-1 flex-col justify-center px-3">

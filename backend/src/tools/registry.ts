@@ -1,5 +1,5 @@
 import { Tool } from './core/tool';
-import { AgentType, AGENTS } from '../core/contracts';
+import { AgentType } from '../core/contracts';
 
 /**
  * Registry to manage available tools and access control
@@ -33,6 +33,9 @@ export class ToolRegistry {
 
   private initializeAccessControl() {
     // Define which agents can use which tools
+
+    // Repository Analyzer: GitHub extraction
+    this.accessControl.set('repository_analyzer', ['github_fetcher']);
 
     // Requirement Analyzer: User safety, compliance
     this.accessControl.set('requirement_analyzer', ['compliance_checker']);

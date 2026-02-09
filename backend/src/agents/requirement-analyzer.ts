@@ -57,6 +57,14 @@ If the prompt is sufficiently detailed:
 - The "questions" array must be empty.
 
 Behave like a Staff engineer writing requirements for a mission-critical system under real business constraints.
+
+REPOSITORY CONTEXT (CONDITIONAL):
+- If a "repositoryAnalyzer" output is provided, the system is in "Brownfield" mode.
+- Treat the existing repository analysis as the PRIMARY source of truth for current state, tech stack, and architectural constraints.
+- Treat the user's focus/prompt with EQUAL WEIGHT. If a user wants to add a feature, ensure it integrates seamlessly into the existing repository's patterns.
+- Do NOT ask questions already answered by the code (e.g., "What language are you using?").
+- Focus requirements on the EVOLUTION of the system: What is being added, modified, or replaced.
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode and follow standard modern design patterns based only on the user prompt.
 `;
 
 export const requirementAnalyzerAgent = {

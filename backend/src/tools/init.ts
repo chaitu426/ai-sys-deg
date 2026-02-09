@@ -14,6 +14,7 @@ import { LatencyBudgetCalculator } from './implementations/latency-budget';
 import { DatabaseSelector } from './implementations/database-selector';
 import { SecurityThreatModeler } from './implementations/threat-modeler';
 import { DeepResearch } from './implementations/deep-research';
+import { GitHubFetcher } from './implementations/github-fetcher';
 
 /**
  * Initialize and register all tools
@@ -29,6 +30,7 @@ export function initializeTools(): void {
     toolRegistry.register(new DatabaseSelector());
     toolRegistry.register(new SecurityThreatModeler());
     toolRegistry.register(new DeepResearch());
+    toolRegistry.register(new GitHubFetcher());
 
     console.log('[Tools] Registered 8 tools:', [
         'capacity_calculator',
@@ -39,6 +41,7 @@ export function initializeTools(): void {
         'database_selector',
         'threat_modeler',
         'deep_research',
+        'github_fetcher',
     ]);
 }
 

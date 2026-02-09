@@ -7,6 +7,9 @@ import { useDesign } from '../../hooks/use-design';
 import { useAgentStore } from '../../stores/agent.store';
 import { DottedGlowBackground } from '../../../../../components/ui/dotted-glow-background';
 import { cn } from '@/lib/utils';
+import { Github, Check, ChevronDown } from 'lucide-react';
+import { useAuthStore } from '@/lib/stores/auth.store';
+import { useGitHubRepos } from '../../hooks/use-github-repos';
 
 interface PromptEditorProps {
   workspaceId: string;
@@ -15,16 +18,28 @@ interface PromptEditorProps {
 export function PromptEditor({ workspaceId }: PromptEditorProps) {
   const { createDesign } = useDesign(workspaceId);
   const { setAgentStatus } = useAgentStore();
+  const { user } = useAuthStore();
   const [prompt, setPrompt] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+  const [isRepoMenuOpen, setIsRepoMenuOpen] = useState(false);
+
+  const { repos, isLoading: isLoadingRepos } = useGitHubRepos();
+
+  const handleConnectGitHub = () => {
+    const token = useAuthStore.getState().token;
+    const returnTo = window.location.pathname + window.location.search;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/auth/github?token=${token}&returnTo=${encodeURIComponent(returnTo)}`;
+  };
 
   const handleSubmit = async () => {
     if (!prompt.trim() || isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      setAgentStatus('requirement_analyzer', 'processing');
-      await createDesign(prompt);
+      const initialAgent = selectedRepo ? 'repository_analyzer' : 'requirement_analyzer';
+      setAgentStatus(initialAgent, 'processing');
+      await createDesign(prompt, selectedRepo || undefined);
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
@@ -108,7 +123,83 @@ export function PromptEditor({ workspaceId }: PromptEditorProps) {
 
             {/* Footer */}
             <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3 text-xs text-neutral-500 dark:border-neutral-800">
-              <span>Press Enter to submit · Shift + Enter for new line</span>
+              <div className="flex items-center gap-4">
+                <span>Press Enter to submit · Shift + Enter for new line</span>
+
+                <div className="h-4 w-[1px] bg-neutral-200 dark:bg-neutral-800" />
+
+                {/* GitHub Selector */}
+                {!user?.githubId ? (
+                  <button
+                    onClick={handleConnectGitHub}
+                    className="flex items-center gap-1.5 text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors"
+                  >
+                    <Github className="h-3.5 w-3.5" />
+                    Connect GitHub for Context
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsRepoMenuOpen(!isRepoMenuOpen)}
+                      className="flex items-center gap-1.5 text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors"
+                    >
+                      <Github className="h-3.5 w-3.5" />
+                      {selectedRepo ? (
+                        <span className="max-w-[120px] truncate underline decoration-dotted">
+                          {selectedRepo.split('/')[1]}
+                        </span>
+                      ) : (
+                        "Select Repo"
+                      )}
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+
+                    {isRepoMenuOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setIsRepoMenuOpen(false)} />
+                        <div className="absolute bottom-full left-0 z-50 mb-2 w-64 max-h-60 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-xl backdrop-blur dark:border-neutral-800 dark:bg-neutral-900">
+                          {isLoadingRepos ? (
+                            <div className="flex items-center justify-center p-3">
+                              <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
+                            </div>
+                          ) : repos.length === 0 ? (
+                            <div className="p-3 text-center text-neutral-500">No repositories found</div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setSelectedRepo(null);
+                                  setIsRepoMenuOpen(false);
+                                }}
+                                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                              >
+                                <span>No Repository</span>
+                                {!selectedRepo && <Check className="h-3.5 w-3.5" />}
+                              </button>
+                              {repos.map((repo) => (
+                                <button
+                                  key={repo.id}
+                                  onClick={() => {
+                                    setSelectedRepo(repo.fullName);
+                                    setIsRepoMenuOpen(false);
+                                  }}
+                                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="truncate">{repo.name}</span>
+                                    <span className="text-[10px] text-neutral-400 truncate">{repo.fullName}</span>
+                                  </div>
+                                  {selectedRepo === repo.fullName && <Check className="h-3.5 w-3.5" />}
+                                </button>
+                              ))}
+                            </>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <button
                 onClick={handleSubmit}

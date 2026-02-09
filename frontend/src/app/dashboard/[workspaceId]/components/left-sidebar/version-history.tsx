@@ -30,7 +30,7 @@ export function VersionHistory() {
             className={cn(
               'flex w-full items-start gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm transition-all',
               activeVersion?.id === v.id
-                ? 'bg-primary/5 text-foreground border-primary/10 shadow-sm'
+                ? 'bg-white/5 text-foreground border-white/10 shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
             )}
           >
@@ -38,11 +38,11 @@ export function VersionHistory() {
               <GitCommit
                 className={cn(
                   'h-4 w-4',
-                  activeVersion?.id === v.id ? 'text-primary' : 'text-muted-foreground/60'
+                  activeVersion?.id === v.id ? 'text-white' : 'text-muted-foreground/60'
                 )}
               />
               {activeVersion?.id === v.id && (
-                <div className="bg-primary/20 absolute inset-0 animate-pulse blur-[6px]" />
+                <div className="bg-white/20 absolute inset-0 animate-pulse blur-[6px]" />
               )}
             </div>
             <div className="flex min-w-0 flex-col items-start">
@@ -56,7 +56,7 @@ export function VersionHistory() {
       </div>
 
       <div className="border-border/50 bg-sidebar/50 border-t p-2">
-        <button className="text-muted-foreground hover:text-primary flex w-full items-center justify-center gap-2 py-1.5 text-[10px] font-medium transition-colors">
+        <button className="text-muted-foreground hover:text-white flex w-full items-center justify-center gap-2 py-1.5 text-[10px] font-medium transition-colors">
           <GitBranch size={12} />
           <span>View all versions</span>
         </button>

@@ -21,6 +21,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Plan, PLAN_LIMITS } from '@/lib/plans';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { AgentType } from '../../types/agent';
 import {
   Requirements,
@@ -53,7 +54,19 @@ export function ArtifactsViewer() {
   const { agentStatuses } = useAgentStore();
   const { retryAgent } = useDesign(workspaceId);
   const { user } = useAuthStore();
+  const { getWhiteboards, saveWhiteboard } = useDesign(workspaceId);
+  const { whiteboardData, loadWhiteboards } = useDesignStore();
   const [activeTab, setActiveTab] = useState('requirement_analyzer');
+
+  // Load whiteboards once
+  useEffect(() => {
+    if (Object.keys(whiteboardData).length === 0) {
+      getWhiteboards().then(wbs => {
+        if (wbs) loadWhiteboards(wbs);
+      });
+    }
+  }, [workspaceId, getWhiteboards, loadWhiteboards, whiteboardData]);
+
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -87,13 +100,6 @@ export function ArtifactsViewer() {
       agentType: 'tech_stack' as AgentType,
     },
     {
-      id: 'diagram_generator',
-      label: 'System Diagrams',
-      icon: Activity,
-      content: activeVersion?.diagrams,
-      agentType: 'diagram_generator' as AgentType,
-    },
-    {
       id: 'api_design',
       label: 'API Specifications',
       icon: Server,
@@ -120,6 +126,13 @@ export function ArtifactsViewer() {
       icon: AlertTriangle,
       content: activeVersion?.failureModeAnalysis,
       agentType: 'failure_mode_analyzer' as AgentType,
+    },
+    {
+      id: 'diagram_generator',
+      label: 'System Diagrams',
+      icon: Activity,
+      content: activeVersion?.diagrams,
+      agentType: 'diagram_generator' as AgentType,
     },
   ].filter((tab) => allowedAgents.includes(tab.agentType));
 
@@ -161,13 +174,23 @@ export function ArtifactsViewer() {
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
     setHasInteracted(true);
+    const label = tabs.find(t => t.id === tabId)?.label;
+    toast(`Viewing ${label}`, {
+      duration: 1500,
+      position: 'bottom-center',
+    });
   };
 
 
   const handleRetry = async (agentType: string) => {
+    const label = tabs.find(t => t.id === agentType)?.label || agentType;
+    const toastId = toast.loading(`Restarting ${label}...`);
     setIsActionLoading(true);
     try {
       await retryAgent(agentType as AgentType);
+      toast.success(`${label} back in progress`, { id: toastId });
+    } catch (err) {
+      toast.error(`Failed to restart ${label}`, { id: toastId });
     } finally {
       setIsActionLoading(false);
     }
@@ -215,19 +238,19 @@ export function ArtifactsViewer() {
                   >
                     {isProcessing && (
                       <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                       </span>
                     )}
-                    <Icon size={12} className={cn(isProcessing && 'animate-pulse text-primary')} />
+                    <Icon size={12} className={cn(isProcessing && 'animate-pulse text-white')} />
                     {tab.label}
-                    {isCompleted && <CheckCircle2 size={10} className="text-emerald-500 ml-1" />}
+                    {isCompleted && <CheckCircle2 size={10} className="text-white ml-1" />}
                   </button>
                   {agentStatuses[tab.id as AgentType] === 'failed' && (
                     <button
                       onClick={() => handleRetry(tab.id)}
                       disabled={isActionLoading}
-                      className="rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-500/10"
+                      className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-white/10 hover:text-white"
                       title="Retry this agent"
                     >
                       <RotateCcw size={12} />
@@ -280,7 +303,7 @@ export function ArtifactsViewer() {
               </div>
 
               <div className="relative z-10 max-w-2xl">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-bold tracking-widest text-emerald-500 uppercase">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold tracking-widest text-white uppercase border border-white/20">
                   <CheckCircle2 size={12} />
                   Design Stage Complete
                 </div>

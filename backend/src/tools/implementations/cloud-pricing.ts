@@ -1,4 +1,5 @@
 import { Tool } from '../core/tool';
+import { AgentContext } from '../../core/contracts';
 import { z } from 'zod';
 
 export class CloudPricing implements Tool {

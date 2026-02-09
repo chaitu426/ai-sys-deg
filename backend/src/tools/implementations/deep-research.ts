@@ -1,5 +1,6 @@
 import { Tool } from '../core/tool';
 import { z } from 'zod';
+import { AgentContext } from '../../core/contracts';
 import { WebSearcher } from '../../utils/web-search';
 import { getGeminiClient } from '../../llm/gemini-client';
 
@@ -29,7 +30,7 @@ export class DeepResearch implements Tool {
         };
     }
 
-    async execute(args: { query: string }) {
+    async execute(args: { query: string }, context?: AgentContext) {
         const { query } = this.schema.parse(args);
         const gemini = getGeminiClient();
 

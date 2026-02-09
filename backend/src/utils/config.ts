@@ -49,6 +49,11 @@ const configSchema = z.object({
   // Worker Configuration
   WORKER_CONCURRENCY: z.coerce.number().int().positive().optional(),
   WORKER_MAX_JOBS_PER_SECOND: z.coerce.number().int().positive().optional(),
+
+  // GitHub OAuth
+  GITHUB_CLIENT_ID: z.string().min(1).optional(), // Optional for now to not break existing setups
+  GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
+  GITHUB_CALLBACK_URL: z.string().url().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;

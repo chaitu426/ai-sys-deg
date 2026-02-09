@@ -1,5 +1,6 @@
 import { Tool } from '../core/tool';
 import { z } from 'zod';
+import { AgentContext } from '../../core/contracts';
 
 export class CapacityCalculator implements Tool {
   name = 'capacity_calculator';
@@ -34,11 +35,7 @@ export class CapacityCalculator implements Tool {
     };
   }
 
-  async execute(args: {
-    dailyActiveUsers: number;
-    avgRequestsPerUser?: number;
-    avgStoragePerUserMB?: number;
-  }) {
+  async execute(args: any, context?: AgentContext) {
     // Validate inputs using Zod
     const input = this.schema.parse(args);
 

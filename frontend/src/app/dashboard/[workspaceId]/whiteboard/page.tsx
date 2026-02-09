@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { InteractiveDiagram } from '../components/center/artifacts/interactive-diagram';
 import { useDesignStore } from '../stores/design.store';
+import { useDesign } from '../hooks/use-design';
 import { ArrowLeft, GitBranch, Share2, Download, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -15,6 +16,16 @@ function WhiteboardContent() {
 
   const workspaceId = params?.workspaceId as string;
   const type = searchParams.get('type') || 'architecture';
+  const { getWhiteboards } = useDesign(workspaceId);
+  const { loadWhiteboards } = useDesignStore();
+
+  useEffect(() => {
+    const fetchWhiteboards = async () => {
+      const wbs = await getWhiteboards();
+      if (wbs) loadWhiteboards(wbs);
+    };
+    fetchWhiteboards();
+  }, [getWhiteboards, loadWhiteboards]);
 
   const getMermaidData = () => {
     if (!activeVersion?.diagrams) return '';
@@ -23,6 +34,10 @@ function WhiteboardContent() {
         return activeVersion.diagrams.requestFlow;
       case 'scaling':
         return activeVersion.diagrams.scalingView || '';
+      case 'cloud':
+        return activeVersion.diagrams.cloudArchitecture || '';
+      case 'api':
+        return activeVersion.diagrams.apiArchitecture || '';
       default:
         return activeVersion.diagrams.highLevelSystem;
     }
@@ -34,6 +49,10 @@ function WhiteboardContent() {
         return 'Request Flow Editor';
       case 'scaling':
         return 'Scaling Strategy Editor';
+      case 'cloud':
+        return 'Cloud Infrastructure Editor';
+      case 'api':
+        return 'API Architecture Editor';
       default:
         return 'Architecture Whiteboard';
     }
@@ -99,11 +118,10 @@ function SnapshotItem({
 }) {
   return (
     <div
-      className={`flex cursor-pointer items-center justify-between rounded-lg border p-2 transition-all ${
-        active
-          ? 'bg-primary/10 border-primary/30'
-          : 'bg-muted/30 hover:border-border border-transparent'
-      }`}
+      className={`flex cursor-pointer items-center justify-between rounded-lg border p-2 transition-all ${active
+        ? 'bg-primary/10 border-primary/30'
+        : 'bg-muted/30 hover:border-border border-transparent'
+        }`}
     >
       <div className="flex flex-col">
         <span className={`text-[11px] font-bold ${active ? 'text-primary' : 'text-foreground'}`}>

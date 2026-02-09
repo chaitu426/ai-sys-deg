@@ -24,10 +24,10 @@ export function FailureView({ data }: { data: FailureModeAnalysis }) {
                 size={48}
                 className={
                   data.resilienceScore > 80
-                    ? 'text-emerald-500'
+                    ? 'text-white'
                     : data.resilienceScore > 50
-                      ? 'text-amber-500'
-                      : 'text-red-500'
+                      ? 'text-zinc-400'
+                      : 'text-zinc-600'
                 }
               />
               <span className="text-background absolute inset-0 mt-1 flex items-center justify-center text-[10px] font-bold">
@@ -41,14 +41,14 @@ export function FailureView({ data }: { data: FailureModeAnalysis }) {
           </div>
           <div className="col-span-2 space-y-4">
             {data.singlePointsOfFailure && data.singlePointsOfFailure.length > 0 && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-5">
-                <h5 className="mb-3 flex items-center gap-2 text-xs font-bold text-red-500 uppercase">
+              <div className="rounded-lg border border-white/20 bg-white/5 p-5">
+                <h5 className="mb-3 flex items-center gap-2 text-xs font-bold text-white uppercase">
                   <AlertTriangle size={14} /> Single Points of Failure
                 </h5>
                 <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   {data.singlePointsOfFailure.map((spof, i) => (
                     <li key={i} className="text-foreground/80 flex gap-2 text-xs">
-                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-400" /> <SafeRender value={spof} />
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-white" /> <SafeRender value={spof} />
                     </li>
                   ))}
                 </ul>
@@ -84,14 +84,14 @@ export function FailureView({ data }: { data: FailureModeAnalysis }) {
             return (
               <div
                 key={i}
-                className="group bg-card border-border overflow-hidden rounded-xl border shadow-sm transition-all hover:border-red-500/30"
+                className="group bg-card border-border overflow-hidden rounded-xl border shadow-sm transition-all hover:border-white/30"
               >
                 <div className="divide-border flex flex-col divide-y md:flex-row md:divide-x md:divide-y-0">
                   <div className="bg-muted/10 p-6 md:w-1/3">
                     <div className="mb-3 flex items-center gap-2">
                       <AlertTriangle
                         size={14}
-                        className={cn(isHighImpact ? 'text-red-500' : 'text-amber-500')}
+                        className={cn(isHighImpact ? 'text-white' : 'text-zinc-400')}
                       />
                       <span className="text-muted-foreground/60 text-[10px] font-bold tracking-[0.2em] uppercase">
                         Risk Source
@@ -109,8 +109,8 @@ export function FailureView({ data }: { data: FailureModeAnalysis }) {
                           className={cn(
                             'rounded px-2 py-0.5 text-[10px] font-bold uppercase',
                             isHighImpact
-                              ? 'bg-red-500/10 text-red-500'
-                              : 'bg-amber-500/10 text-amber-500'
+                              ? 'bg-white/10 text-white'
+                              : 'bg-zinc-500/10 text-zinc-400'
                           )}
                         >
                           {impact}
@@ -162,13 +162,14 @@ export function FailureView({ data }: { data: FailureModeAnalysis }) {
         </div>
       ) : (
         <JsonFallback data={data} />
-      )}
+      )
+      }
 
       <ResearchSources
         sources={data.researchSources}
         title="Resilience Research"
         subtitle="Web research on common failure modes and mitigation best practices for this stack."
       />
-    </div>
+    </div >
   );
 }

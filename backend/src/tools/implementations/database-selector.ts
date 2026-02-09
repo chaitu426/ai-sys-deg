@@ -1,5 +1,6 @@
 import { Tool } from '../core/tool';
 import { z } from 'zod';
+import { AgentContext } from '../../core/contracts';
 
 export class DatabaseSelector implements Tool {
     name = 'database_selector';
@@ -33,7 +34,7 @@ export class DatabaseSelector implements Tool {
         };
     }
 
-    async execute(args: any) {
+    async execute(args: any, context?: AgentContext) {
         const input = this.schema.parse(args);
 
         const candidates = this.getCandidates(input.dataModel);

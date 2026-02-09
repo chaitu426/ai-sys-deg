@@ -52,6 +52,11 @@ You MUST output ONLY a valid JSON object. No markdown, no explanations, no code 
 - Use threat_modeler tool to identify security-related failure modes
 - Include any research sources in researchSources
 
+REPOSITORY AWARENESS (CONDITIONAL):
+- If "repositoryAnalyzer" results are provided, you are in "Brownfield" mode.
+- Analyze failure modes specifically relevant to the existing repository's architecture (e.g., if the repo uses a specific legacy DB, consider its unique failure modes).
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode.
+
 ## Critical Rules
 - Output ONLY raw JSON
 - Ensure all strings are properly escaped

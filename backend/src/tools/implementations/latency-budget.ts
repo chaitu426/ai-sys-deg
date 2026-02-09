@@ -1,5 +1,6 @@
 import { Tool } from '../core/tool';
 import { z } from 'zod';
+import { AgentContext } from '../../core/contracts';
 
 export class LatencyBudgetCalculator implements Tool {
     name = 'latency_budget_calculator';
@@ -45,16 +46,7 @@ export class LatencyBudgetCalculator implements Tool {
             error: result.success ? undefined : result.error.message,
         };
     }
-
-    async execute(args: {
-        budgetMs: number;
-        hops: Array<{
-            name: string;
-            type: 'network' | 'database' | 'service' | 'cache' | 'compute';
-            latencyMs: number;
-            probability?: number;
-        }>;
-    }) {
+    async execute(args: any, context?: AgentContext) {
         const input = this.schema.parse(args);
         const budget = input.budgetMs;
 

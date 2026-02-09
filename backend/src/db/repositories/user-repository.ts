@@ -63,9 +63,11 @@ export class UserRepository {
         isVerified: true,
         subscriptionStatus: true,
         currentPeriodEnd: true,
+        githubId: true,
+        githubAccessToken: true,
         createdAt: true,
         updatedAt: true,
-      },
+      } as any,
     });
   }
 

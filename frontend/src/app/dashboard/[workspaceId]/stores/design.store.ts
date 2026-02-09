@@ -27,6 +27,7 @@ interface DesignState {
   setActiveVersion: (version: DesignVersion) => void;
   updateArtifact: (key: keyof DesignVersion, value: any) => void;
   setWhiteboardData: (projectId: string, type: string, data: any) => void;
+  loadWhiteboards: (whiteboards: any[]) => void;
   reset: () => void;
 }
 
@@ -73,6 +74,15 @@ export const useDesignStore = create<DesignState>((set) => ({
         [`${projectId}_${type}`]: data,
       },
     })),
+
+  loadWhiteboards: (whiteboards) =>
+    set((state) => {
+      const newData = { ...state.whiteboardData };
+      whiteboards.forEach((wb) => {
+        newData[`${wb.projectId}_${wb.type}`] = wb.data;
+      });
+      return { whiteboardData: newData };
+    }),
 
   reset: () =>
     set({

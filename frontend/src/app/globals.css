@@ -56,55 +56,59 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* 🌙 DARK THEME — MATURE SAAS (Monochrome) */
+/* 🌙 DARK THEME — MATURE SAAS (Monochrome Glass) */
 :root {
   --radius: 0.5rem;
 
-  /* Pure black/dark gray backgrounds */
+  /* Deep Matte Black Background */
   --background: oklch(0 0 0);
-  --foreground: oklch(0.98 0 0);
+  --foreground: oklch(1 0 0);
 
-  /* Card / Surfaces - Subtle separation */
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.98 0 0);
+  /* Glass Surfaces (Transparent for backdrop-filter) */
+  --card: oklch(0.12 0 0 / 0.6);
+  --card-foreground: oklch(1 0 0);
 
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.08 0 0 / 0.8);
+  --popover-foreground: oklch(1 0 0);
 
-  /* Primary - Minimalist White or very subtle gray */
-  --primary: oklch(0.98 0 0);
+  /* Primary - Distinct White Glass */
+  --primary: oklch(1 0 0);
   --primary-foreground: oklch(0 0 0);
 
-  --secondary: oklch(0.18 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.18 0 0 / 0.7);
+  --secondary-foreground: oklch(1 0 0);
 
-  --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.6 0 0);
+  --muted: oklch(0.15 0 0 / 0.5);
+  --muted-foreground: oklch(0.65 0 0);
 
-  --accent: oklch(0.18 0 0);
-  --accent-foreground: oklch(0.98 0 0);
+  --accent: oklch(0.2 0 0 / 0.6);
+  --accent-foreground: oklch(1 0 0);
 
-  --destructive: oklch(0.6 0.15 25);
+  /* Monochrome Destructive */
+  --destructive: oklch(0.2 0 0);
+  --destructive-foreground: oklch(1 0 0);
 
-  /* Borders - crisp and subtle */
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.25 0 0);
-  --ring: oklch(0.8 0 0);
+  /* Subtle Glass Borders */
+  --border: oklch(1 0 0 / 0.15);
+  --input: oklch(1 0 0 / 0.15);
+  --ring: oklch(1 0 0 / 0.2);
 
-  --chart-1: oklch(0.98 0 0);
-  --chart-2: oklch(0.8 0 0);
-  --chart-3: oklch(0.6 0 0);
-  --chart-4: oklch(0.4 0 0);
-  --chart-5: oklch(0.2 0 0);
+  /* Grayscale Charts */
+  --chart-1: oklch(0.9 0 0);
+  --chart-2: oklch(0.7 0 0);
+  --chart-3: oklch(0.5 0 0);
+  --chart-4: oklch(0.3 0 0);
+  --chart-5: oklch(0.1 0 0);
 
-  --sidebar: oklch(0.08 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.98 0 0);
+  /* Sidebar Glass */
+  --sidebar: oklch(0.05 0 0 / 0.7);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(1 0 0);
   --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.15 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.2 0 0);
-  --sidebar-ring: oklch(0.8 0 0);
+  --sidebar-accent: oklch(0.2 0 0 / 0.5);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 0.1);
+  --sidebar-ring: oklch(1 0 0 / 0.2);
 }
 
 @layer base {
@@ -113,7 +117,39 @@
   }
 
   body {
-    @apply bg-background text-foreground max-w-[100vw] overflow-x-hidden tracking-tight;
+    @apply bg-background text-foreground max-w-[100vw] overflow-x-hidden tracking-tight antialiased;
+    /* subtle gradient mesh background could be added here for depth */
+    background-image: radial-gradient(circle at 50% 0%, oklch(0.2 0 0 / 0.2) 0%, transparent 50%);
+  }
+}
+
+@layer components {
+
+  /* GLass Effect enforcement for surfaces */
+  .bg-card,
+  .bg-popover,
+  .bg-sidebar,
+  .bg-muted {
+    @apply backdrop-blur-xl saturate-150 border border-white/10;
+  }
+
+  /* Modern Button Glass Styling */
+  .bg-primary {
+    @apply backdrop-blur-md shadow-lg shadow-white/10 border border-white/20 hover:scale-[1.02] transition-transform duration-200 active:scale-95;
+  }
+
+  .bg-secondary {
+    @apply backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-lg;
+  }
+
+  .glass-button {
+    @apply inline-flex items-center justify-center backdrop-blur-lg bg-white/10 border border-white/20 text-white shadow-md hover:bg-white/20 transition-all duration-300;
   }
 }
 
@@ -195,24 +231,22 @@
 :root {
   --scrollbar-bg: transparent;
   --scrollbar-thumb: rgb(63 63 70);
-  /* zinc-700 */
+  /* Zinc 700 */
   --scrollbar-thumb-hover: rgb(82 82 91);
-  /* zinc-600 */
+  /* Zinc 600 */
 }
 
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @media print {
-  /* Reset the entire viewport */
+
   html,
   body {
     margin: 0 !important;
@@ -223,12 +257,10 @@
     color: black !important;
   }
 
-  /* Hide the main application container and any other overlays */
-  body > *:not(#professional-report) {
+  body>*:not(#professional-report) {
     display: none !important;
   }
 
-  /* Force display of the report */
   #professional-report {
     display: block !important;
     position: relative !important;
@@ -238,7 +270,6 @@
     background: white !important;
   }
 
-  /* Section breaks */
   .page-break-before {
     page-break-before: always !important;
     padding-top: 2cm !important;
@@ -248,7 +279,6 @@
     page-break-after: always !important;
   }
 
-  /* Ensure standard components look good on white background */
   .bg-card,
   .bg-muted,
   .bg-sidebar,
@@ -265,14 +295,12 @@
     color: #333 !important;
   }
 
-  /* Diagram scaling for print */
   .mermaid svg {
     width: 100% !important;
     height: auto !important;
     max-height: 40vh !important;
   }
 
-  /* Hide custom scrollbars in PDF */
   ::-webkit-scrollbar {
     display: none;
   }

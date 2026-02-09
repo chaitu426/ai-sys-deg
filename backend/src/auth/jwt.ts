@@ -2,7 +2,7 @@
  * JWT authentication utilities
  * Production-grade JWT handling
  */
-
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { getConfig } from '../utils/config';
 //import { getLogger } from '../utils/logger';
 
@@ -37,6 +37,12 @@ export async function registerJWT(fastify: any) {
       });
     }
   });
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+  }
 }
 
 /**

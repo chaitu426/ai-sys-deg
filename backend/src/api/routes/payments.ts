@@ -94,6 +94,43 @@ export async function registerPaymentRoutes(app: FastifyInstance) {
   );
 
   /* ------------------------------------------------------------------------ */
+  /*                                 PAYMENTS                                 */
+  /* ------------------------------------------------------------------------ */
+
+  app.get(
+    '/api/payments',
+    { preHandler: [app.authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (request.user as { userId: string })?.userId;
+        if (!userId) return reply.status(401).send({ error: 'Unauthorized' });
+
+        const payments = await prisma.payment.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        return reply.send({
+          success: true,
+          payments: payments.map((p) => ({
+            id: p.id,
+            amount: p.amount,
+            currency: p.currency,
+            status: p.status,
+            plan: p.plan,
+            paymentMethod: p.paymentMethod,
+            receiptUrl: p.receiptUrl,
+            createdAt: p.createdAt,
+          })),
+        });
+      } catch (err) {
+        logger.error('Failed to fetch payments', err);
+        return reply.status(500).send({ error: 'Failed to fetch payments' });
+      }
+    }
+  );
+
+  /* ------------------------------------------------------------------------ */
   /*                                 WEBHOOK                                  */
   /* ------------------------------------------------------------------------ */
 

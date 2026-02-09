@@ -47,7 +47,7 @@ export function DeploymentView({ data }: { data: DeploymentStrategy }) {
         {/* Release Strategy */}
         <div className="border-border bg-card rounded-xl border p-6">
           <div className="border-border mb-6 flex items-center gap-3 border-b pb-4">
-            <Zap className="h-5 w-5 text-amber-500" />
+            <Zap className="h-5 w-5 text-white" />
             <h4 className="text-sm font-bold tracking-widest uppercase">Release Strategy</h4>
           </div>
 
@@ -124,7 +124,7 @@ export function DeploymentView({ data }: { data: DeploymentStrategy }) {
 
           <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
             <div className="flex items-center gap-2 border-b border-zinc-800 px-6 py-4">
-              <Activity className="h-4 w-4 text-emerald-500" />
+              <Activity className="h-4 w-4 text-white" />
               <h5 className="text-[10px] font-black tracking-widest text-zinc-100 uppercase">
                 {data.ciCd.pipeline}
               </h5>

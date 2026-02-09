@@ -26,16 +26,25 @@ Output your design strictly as a JSON object with the following structure:
     {
       "name": "component name",
       "description": "what it does",
-      "responsibilities": ["responsibility 1", "responsibility 2"]
+      "responsibilities": ["responsibility 1", "responsibility 2"],
+      "justification": "Required if this component modifies or deviates from the existing repository analysis."
     }
   ],
   "serviceBoundaries": [
     {
       "service": "service name",
       "description": "what it does",
-      "responsibilities": ["responsibility 1", "responsibility 2"]
+      "responsibilities": ["responsibility 1", "responsibility 2"],
+      "justification": "Required if this service modifies or deviates from the existing repository analysis."
     }
   ],
+
+REPOSITORY AWARENESS (CONDITIONAL):
+- If "repositoryAnalyzer" results are provided, you are in "Brownfield" mode.
+- Align your design strictly with the existing architecture and logical approach found in the repository.
+- Use the user prompt with EQUAL WEIGHT to evolve the system.
+- If you propose a component or service that is NOT present in the repository, you MUST provide a "justification".
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode.
   "dataFlow": {
     "description": "overall data flow description",
     "flowSteps": [
@@ -113,20 +122,6 @@ ${requirements.assumptions.map((a) => `- ${a}`).join('\n')}
 
 Clarifying Decisions:
 ${requirements.clarifyingDecisions.map((d) => `- ${d}`).join('\n')}`;
-    }
-
-    // If there's previous critique feedback that wasn't approved, include it so the agent can address issues
-    if (context.previousOutputs.critic && !context.previousOutputs.critic.isApproved) {
-      const critique = context.previousOutputs.critic;
-      prompt += `\n\n⚠️ PREVIOUS DESIGN CRITIQUE (You MUST address these issues in your new design):
-Score: ${critique.score}/100
-
-Issues to Fix:`;
-      critique.critique.forEach(c => {
-        prompt += `\n- [${c.severity.toUpperCase()}] ${c.category}: ${c.description}
-  → Suggested Fix: ${c.suggestion}`;
-      });
-      prompt += `\n\nCreate an IMPROVED design that specifically addresses each issue above.`;
     }
 
     prompt += `\n\nDesign a production-grade system architecture. Focus on scalability, reliability, and maintainability.`;

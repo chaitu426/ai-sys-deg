@@ -87,6 +87,13 @@ SELECTION GUIDELINES:
 - Favor technologies with strong community support, documentation, and long-term viability.
 - Avoid vendor lock-in where reasonable, but do not sacrifice reliability for theoretical portability.
 
+REPOSITORY AWARENESS (CONDITIONAL):
+- If "repositoryAnalyzer" results are provided, you are in "Brownfield" mode.
+- You MUST prioritize the existing technologies found in the repository (e.g., if the repo is in Go, do NOT suggest Java unless there is a critical requirement).
+- Use the user prompt with EQUAL WEIGHT. If the user wants to introduce a new technology (e.g., "add Redis for caching"), you should implement it within the context of the existing stack.
+- If you propose changing a CORE piece of the existing stack, you MUST provide an extremely strong "justification".
+- If no "repositoryAnalyzer" is present, stay in "Greenfield" mode.
+
 DECISION PRINCIPLES:
 - If multiple options are viable, select the one with the lowest operational risk.
 - Explicitly justify tradeoffs (e.g., flexibility vs simplicity, cost vs scalability).
@@ -141,6 +148,17 @@ Scaling Strategy:
 - Vertical: ${design.scalingStrategy.verticalScaling.join(', ')}
 - Caching: ${design.scalingStrategy.cachingStrategy}
 - Database: ${design.scalingStrategy.databaseScaling}`;
+    }
+
+    if (context.previousOutputs.repositoryAnalyzer) {
+      const repo = context.previousOutputs.repositoryAnalyzer as any;
+      prompt += `
+REPOSITORY CONTEXT (Existing Stack):
+Primary Language: ${repo.techStack.language}
+Primary Framework: ${repo.techStack.framework}
+Key Components: ${repo.mainComponents.join(', ')}
+Logical Approach: ${repo.logicalApproach}
+`;
     }
 
     prompt += `\n\nSelect concrete technologies that align with this architecture. Justify each choice.`;

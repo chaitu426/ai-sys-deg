@@ -24,6 +24,7 @@ export function ExportDropdown({ projectId }: { projectId: string }) {
 
     setIsExporting(type);
     setIsOpen(false);
+    const toastId = toast.loading(`Preparing ${type.toUpperCase()} export...`);
 
     try {
       if (type === 'markdown') {
@@ -31,7 +32,7 @@ export function ExportDropdown({ projectId }: { projectId: string }) {
 
         if (data.success) {
           downloadFile(data.markdown, `${data.title}.md`, 'text/markdown');
-          toast.success('Markdown exported');
+          toast.success('System documentation exported', { id: toastId });
         }
       }
 
@@ -44,11 +45,11 @@ export function ExportDropdown({ projectId }: { projectId: string }) {
             `${data.title}.json`,
             'application/json'
           );
-          toast.success('OpenAPI spec exported');
+          toast.success('OpenAPI specification ready', { id: toastId });
         }
       }
     } catch (err: any) {
-      toast.error(err?.message || 'Export failed');
+      toast.error('Export failed', { id: toastId, description: err?.message });
     } finally {
       setIsExporting(null);
     }
@@ -59,11 +60,10 @@ export function ExportDropdown({ projectId }: { projectId: string }) {
       {/* ===== Toggle Pill ===== */}
       <button
         onClick={() => setIsOpen((v) => !v)}
-        className={`ml-2 flex items-center gap-1.5 rounded-md border border-l border-zinc-800 px-2.5 py-1 pl-4 text-[11px] font-medium transition-colors ${
-          isOpen
+        className={`ml-2 flex items-center gap-1.5 rounded-md border border-l border-zinc-800 px-2.5 py-1 pl-4 text-[11px] font-medium transition-colors ${isOpen
             ? 'border-zinc-700 bg-zinc-800 text-zinc-200'
             : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-zinc-200'
-        } `}
+          } `}
       >
         {isExporting ? (
           <Loader2 className="h-3 w-3 animate-spin" />

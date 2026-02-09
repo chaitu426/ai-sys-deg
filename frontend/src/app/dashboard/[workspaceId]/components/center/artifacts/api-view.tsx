@@ -57,14 +57,14 @@ export function ApiView({ data }: { data: ApiDesign }) {
                   className={cn(
                     'w-16 shrink-0 rounded border px-2.5 py-1 text-center text-[10px] font-bold tracking-wider uppercase',
                     ep.method === 'GET'
-                      ? 'border-blue-500/20 bg-blue-500/10 text-blue-500'
+                      ? 'border-white/20 bg-white/5 text-zinc-300'
                       : ep.method === 'POST'
-                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
+                        ? 'border-white/40 bg-white/10 text-white font-bold'
                         : ep.method === 'DELETE'
-                          ? 'border-red-500/20 bg-red-500/10 text-red-500'
+                          ? 'border-zinc-800 bg-zinc-900 text-zinc-500'
                           : ep.method === 'PUT'
-                            ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
-                            : 'border-purple-500/20 bg-purple-500/10 text-purple-500'
+                            ? 'border-white/10 bg-white/5 text-zinc-400'
+                            : 'border-white/10 bg-white/5 text-zinc-400'
                   )}
                 >
                   {ep.method}
